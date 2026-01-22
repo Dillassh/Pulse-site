@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PULSE IDO (PLS)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+ --bg:#050608;
+ --bg2:#0B0F14;
+ --primary:#00bfa5;
+ --accent:#00FF85;
+ --text:#FFFFFF;
+ --muted:#9CA3AF;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui;}
+html,body{
+ width:100%;
+ height:100%;
+ background:var(--bg);
+ overflow-x:hidden;
+ scrollbar-width:none;
+}
+body::-webkit-scrollbar{display:none;}
+
+header{
+ padding:24px;
+ text-align:center;
+ border-bottom:1px solid #111;
+}
+header h1{
+ font-size:34px;
+ color:var(--primary);
+ text-shadow:0 0 20px rgba(0,255,133,.8);
+}
+
+.container{
+ max-width:520px;
+ margin:80px auto;
+ background:var(--bg2);
+ padding:40px;
+ border-radius:22px;
+ border:1px solid #111;
+ box-shadow:0 0 40px rgba(0,0,0,.8);
+}
+
+.wallet-btn{
+ width:100%;
+ padding:14px;
+ border-radius:12px;
+ background:none;
+ border:1px solid var(--primary);
+ color:var(--primary);
+ font-weight:700;
+ cursor:pointer;
+ transition:.3s;
+ margin-bottom:24px;
+}
+.wallet-btn:hover{
+ background:var(--primary);
+ color:#000;
+}
+
+.select-row{
+ display:flex;
+ gap:10px;
+ margin-bottom:22px;
+}
+
+.token-select{
+ flex:1;
+ padding:12px;
+ background:#000;
+ border:1px solid #111;
+ color:#fff;
+ border-radius:10px;
+ cursor:pointer;
+ font-weight:700;
+}
+.token-select.active{
+ border-color:var(--primary);
+ color:var(--primary);
+}
+
+input{
+ width:100%;
+ padding:14px;
+ background:#000;
+ border:1px solid #111;
+ border-radius:10px;
+ color:#fff;
+ font-size:16px;
+ margin-bottom:16px;
+}
+
+.info-box{
+ background:#000;
+ border:1px solid #111;
+ border-radius:14px;
+ padding:18px;
+ margin-bottom:18px;
+ color:#E5E7EB;
+ font-size:15px;
+}
+
+.info-line{
+ display:flex;
+ justify-content:space-between;
+ margin-bottom:8px;
+}
+.info-line span:last-child{
+ color:var(--accent);
+ font-weight:700;
+}
+
+.buy-btn{
+ width:100%;
+ padding:16px;
+ border-radius:999px;
+ border:none;
+ background:linear-gradient(135deg,var(--accent),var(--primary));
+ font-weight:900;
+ cursor:not-allowed;
+ opacity:.5;
+}
+
+.notice{
+ margin-top:20px;
+ text-align:center;
+ color:var(--muted);
+ font-size:14px;
+}
+
+.tokenomics{
+ margin-top:40px;
+ text-align:center;
+ color:#E5E7EB;
+}
+.tokenomics h3{
+ color:var(--primary);
+ margin-bottom:14px;
+}
+.tokenomics p{
+ line-height:1.7;
+ font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h1>PULSE IDO – PLS Token</h1>
+</header>
+
+<div class="container">
+
+ <button class="wallet-btn" onclick="connectWallet()">Connect Phantom Wallet</button>
+
+ <div class="select-row">
+  <button class="token-select active" onclick="selectToken('SOL')">SOL</button>
+  <button class="token-select" onclick="selectToken('USDT')">USDT</button>
+  <button class="token-select" onclick="selectToken('USDC')">USDC</button>
+ </div>
+
+ <input type="number" id="amount" placeholder="Enter amount" oninput="calculate()">
+
+ <div class="info-box">
+  <div class="info-line">
+   <span>Estimated Token Price</span>
+   <span id="price">1 SOL = 2,000,000 PLS</span>
+  </div>
+  <div class="info-line">
+   <span>PLS You Receive</span>
+   <span id="receive">0 PLS</span>
+  </div>
+ </div>
+
+ <button class="buy-btn">Buy PLS (IDO not live)</button>
+
+ <div class="notice">
+  Presale allocation: 30% of total supply (300,000,000 PLS)
+ </div>
+
+ <div class="tokenomics">
+  <h3>Tokenomics</h3>
+  <p>
+   Total Supply: 1,000,000,000 PLS<br>
+   Presale: 30%<br>
+   Liquidity: 20%<br>
+   Ecosystem: 20%<br>
+   Team: 15%<br>
+   Treasury: 15%<br><br>
+   <strong>Deflationary:</strong> All transaction taxes are burned periodically.
+  </p>
+ </div>
+
+</div>
+
+<script>
+let selectedToken = "SOL";
+
+const rates = {
+ SOL: 2000000,
+ USDT: 2000,
+ USDC: 2000
+};
+
+function selectToken(token){
+ selectedToken = token;
+ document.querySelectorAll('.token-select').forEach(b=>b.classList.remove('active'));
+ event.target.classList.add('active');
+ calculate();
+}
+
+function calculate(){
+ const amount = parseFloat(document.getElementById("amount").value) || 0;
+ const receive = amount * rates[selectedToken];
+ document.getElementById("receive").innerText = receive.toLocaleString() + " PLS";
+ document.getElementById("price").innerText =
+  selectedToken === "SOL"
+  ? "1 SOL = 2,000,000 PLS"
+  : "1 " + selectedToken + " = 2,000 PLS";
+}
+
+async function connectWallet(){
+ if(!window.solana || !window.solana.isPhantom){
+  alert("Please install Phantom Wallet");
+  return;
+ }
+ const res = await window.solana.connect();
+ alert("Connected: " + res.publicKey.toString());
+}
+</script>
+
+</body>
+</html>
