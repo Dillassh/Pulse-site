@@ -5,16 +5,15 @@
   <meta charset="UTF-8" />
   <title>PULSE – IDO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="PULSE IDO: swap via Jupiter, contribute SOL via Phantom, and learn the presale steps." />
+  <meta name="description" content="PULSE IDO portal: custom swap UI + presale contribution." />
 
   <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
-  <!-- Solana web3.js (browser build via unpkg) -->
+  <!-- Solana web3.js (browser build, no bundler) -->
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-
-  <!-- Jupiter Terminal (embed swap in plain HTML) -->
-  <script src="https://terminal.jup.ag/main-v4.js"></script>
 
   <style>
     :root{
@@ -28,13 +27,16 @@
       --cardBorder:rgba(255,255,255,.06);
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --radius:18px;
-      --danger:#fb7185;
+
+      --good:#22c55e;
       --warn:#fbbf24;
-      --ok:#22c55e;
+      --bad:#fb7185;
     }
+
     *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
     html,body{background:var(--bg);color:var(--text);scroll-behavior:smooth}
     ::-webkit-scrollbar{width:0}
+    body{min-height:100vh; line-height:1.6;}
 
     body::before{
       content:"";
@@ -44,48 +46,33 @@
       z-index:-1;
     }
 
-    /* Top bar */
+    /* Topbar */
     header{
-      position:sticky;
-      top:0;
-      z-index:50;
+      position:sticky;top:0;z-index:50;
       background:rgba(5,6,8,.88);
       backdrop-filter:blur(10px);
       border-bottom:1px solid var(--border);
     }
     .nav{
-      max-width:1200px;
-      margin:auto;
+      max-width:1200px;margin:auto;
       padding:14px 18px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
+      display:flex;justify-content:space-between;align-items:center;
+      gap:12px; flex-wrap:wrap;
     }
     .logo{
-      font-size:26px;
-      font-weight:950;
-      color:var(--primary);
-      letter-spacing:.3px;
-      text-shadow:0 0 20px rgba(0,255,133,.35);
+      font-size:26px;font-weight:950;color:var(--primary);
+      letter-spacing:.3px;text-shadow:0 0 20px rgba(0,255,133,.35);
     }
     .nav-pill{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
       border:1px solid rgba(0,255,133,.25);
       background:rgba(255,255,255,.02);
-      border-radius:999px;
-      padding:10px;
+      border-radius:999px;padding:10px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
     }
     .nav-link{
-      color:var(--text);
-      text-decoration:none;
-      font-weight:900;
-      padding:10px 14px;
-      border-radius:999px;
+      color:var(--text);text-decoration:none;font-weight:900;
+      padding:10px 14px;border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.02);
       transition:.2s ease;
@@ -96,128 +83,97 @@
       color:var(--primary);
     }
     .wallet-btn{
-      position:relative;
-      overflow:hidden;
+      position:relative;overflow:hidden;
       border:1px solid rgba(0,255,133,.35);
-      padding:10px 14px;
-      border-radius:999px;
+      padding:10px 14px;border-radius:999px;
       background:linear-gradient(135deg, rgba(0,255,133,.18), rgba(0,191,165,.10));
-      cursor:pointer;
-      font-weight:950;
-      color:var(--text);
+      cursor:pointer;font-weight:950;color:var(--text);
       transition:transform .16s ease, filter .2s ease, background .2s ease;
-      white-space:nowrap;
       will-change:transform;
     }
     .wallet-btn:hover{
       background:linear-gradient(135deg,var(--primary),var(--secondary));
-      color:#001b10;
-      filter:brightness(1.03);
+      color:#001b10;filter:brightness(1.03);
     }
-    .wallet-btn:active{ transform:translateY(1px) scale(0.985); }
+    .wallet-btn:active{transform:translateY(1px) scale(0.985);}
     .wallet-btn .ripple{
-      position:absolute;
-      border-radius:50%;
-      transform:scale(0);
+      position:absolute;border-radius:50%;transform:scale(0);
       animation:ripple .55s ease-out;
       background:rgba(255,255,255,.35);
       pointer-events:none;
     }
-    @keyframes ripple{ to{ transform:scale(3.2); opacity:0; } }
+    @keyframes ripple{to{transform:scale(3.2);opacity:0;}}
 
-    /* Layout */
-    .wrap{
-      max-width:1200px;
-      margin:auto;
-      padding:22px 18px 70px;
-    }
+    /* Page */
+    .wrap{max-width:1200px;margin:auto;padding:22px 18px 76px;}
     .hero{
       border:1px solid rgba(0,255,133,.14);
       background:radial-gradient(circle at 15% 10%, rgba(0,255,133,.10), rgba(255,255,255,.01) 60%);
-      border-radius:26px;
-      padding:22px;
-      box-shadow:var(--shadow);
-      margin-top:14px;
+      border-radius:26px;padding:22px;
+      box-shadow:var(--shadow); margin-top:14px;
     }
     .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
       border:1px solid rgba(0,255,133,.18);
       background:rgba(255,255,255,.02);
-      color:var(--muted);
-      font-weight:950;
-      font-size:12px;
-      letter-spacing:.45px;
-      text-transform:uppercase;
+      color:var(--muted);font-weight:950;font-size:12px;
+      letter-spacing:.45px;text-transform:uppercase;
     }
     .kicker .dot{
       width:10px;height:10px;border-radius:50%;
       background:linear-gradient(135deg,var(--primary),var(--secondary));
       box-shadow:0 0 20px rgba(0,255,133,.28);
     }
-    h1{
-      margin-top:12px;
-      font-size:30px;
-      color:var(--primary);
-      letter-spacing:-.35px;
+    h1{margin-top:12px;font-size:30px;color:var(--primary);letter-spacing:-.35px;}
+    .hero p{margin-top:10px;color:var(--muted);line-height:1.85;max-width:980px;font-size:14.6px;}
+
+    /* Tabs */
+    .tabs{
+      margin-top:16px;
+      display:flex;gap:10px;flex-wrap:wrap;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      border-radius:999px;padding:10px;
+      width:fit-content;
     }
-    .hero p{
-      margin-top:10px;
+    .tab{
+      padding:10px 14px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
       color:var(--muted);
-      line-height:1.85;
-      max-width:980px;
-      font-size:14.6px;
+      font-weight:950;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .tab:hover{border-color:rgba(0,255,133,.22); color:var(--text);}
+    .tab.active{
+      color:#001b10;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      border-color:transparent;
     }
 
     .grid{
       display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap:16px;
-      margin-top:16px;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;margin-top:16px;
       align-items:start;
     }
-    @media(max-width:980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+    @media(max-width:980px){.grid{grid-template-columns:1fr;}}
 
     .card{
       border:1px solid var(--cardBorder);
       background:rgba(255,255,255,.02);
-      border-radius:22px;
-      padding:18px;
+      border-radius:22px;padding:18px;
       box-shadow:var(--shadow);
     }
-    .card h2{
-      font-size:18px;
-      color:var(--text);
-      margin-bottom:8px;
-      letter-spacing:-.1px;
-    }
-    .muted{ color:var(--muted); line-height:1.75; font-size:14px; }
+    .card h2{font-size:18px;color:var(--text);margin-bottom:8px;letter-spacing:-.1px;}
+    .muted{color:var(--muted);line-height:1.75;font-size:14px;}
 
-    /* Swap terminal container */
-    #integrated-terminal{
-      width:100%;
-      height:640px;
-      border-radius:18px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(0,0,0,.20);
-    }
-
-    /* Contribute widget */
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:12px;
-    }
-    .input{
-      flex:1 1 230px;
+    /* Form */
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;}
+    .input, .select{
+      flex:1 1 220px;
       min-width:220px;
       padding:14px 14px;
       border-radius:14px;
@@ -225,8 +181,9 @@
       background:rgba(0,0,0,.25);
       color:var(--text);
       outline:none;
+      font-weight:700;
     }
-    .input:focus{
+    .input:focus, .select:focus{
       border-color:rgba(0,255,133,.30);
       box-shadow:0 0 0 4px rgba(0,255,133,.08);
     }
@@ -249,80 +206,71 @@
       background:linear-gradient(135deg,var(--primary),var(--secondary));
       color:#001b10;
     }
-    .btn:hover{ border-color:rgba(0,255,133,.25); }
-    .btn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-      filter:saturate(.6);
-    }
+    .btn:hover{border-color:rgba(0,255,133,.25);}
+    .btn:disabled{opacity:.55;cursor:not-allowed;filter:saturate(.6);}
 
     .pill{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      padding:12px 14px;
-      border-radius:16px;
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:12px 14px;border-radius:16px;
       border:1px solid rgba(255,255,255,.08);
       background:rgba(0,0,0,.18);
       margin-top:12px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
+      color:var(--muted);font-size:13px;line-height:1.7;
     }
-    .pill b{ color:var(--text); }
+    .pill b{color:var(--text);}
 
     .status{
       margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:12px 14px;border-radius:14px;
       border:1px solid rgba(255,255,255,.08);
       background:rgba(0,0,0,.18);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
+      color:var(--muted);font-size:13px;line-height:1.7;
       display:none;
+      word-break:break-word;
     }
-    .status.show{ display:block; }
-    .status.good{ border-color:rgba(34,197,94,.35); }
-    .status.warn{ border-color:rgba(251,191,36,.35); }
-    .status.bad{ border-color:rgba(251,113,133,.35); }
-    .status a{ color:var(--primary); font-weight:900; text-decoration:none; }
-    .status a:hover{ text-decoration:underline; }
+    .status.show{display:block;}
+    .status.good{border-color:rgba(34,197,94,.35);}
+    .status.warn{border-color:rgba(251,191,36,.35);}
+    .status.bad{border-color:rgba(251,113,133,.35);}
+    .status a{color:var(--primary);font-weight:900;text-decoration:none;}
+    .status a:hover{text-decoration:underline;}
 
-    .steps{
-      margin-top:10px;
-      display:grid;
-      gap:10px;
-    }
+    .divider{height:1px;background:rgba(255,255,255,.06);margin:14px 0;}
+
+    .steps{margin-top:10px;display:grid;gap:10px;}
     .step{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      padding:12px 14px;
-      border-radius:16px;
+      display:flex;gap:12px;align-items:flex-start;
+      padding:12px 14px;border-radius:16px;
       border:1px solid rgba(255,255,255,.07);
       background:rgba(0,0,0,.14);
     }
     .num{
       width:34px;height:34px;border-radius:12px;
       display:flex;align-items:center;justify-content:center;
-      font-weight:950;
-      color:var(--primary);
+      font-weight:950;color:var(--primary);
       border:1px solid rgba(0,255,133,.22);
       background:rgba(0,255,133,.10);
       flex:0 0 auto;
     }
-    .step h3{ font-size:14px; margin-top:2px; }
-    .step p{ color:var(--muted); font-size:13px; line-height:1.75; margin-top:4px; }
+    .step h3{font-size:14px;margin-top:2px;}
+    .step p{color:var(--muted);font-size:13px;line-height:1.75;margin-top:4px;}
 
-    footer{
-      margin-top:18px;
-      text-align:center;
-      color:rgba(156,163,175,.92);
-      font-size:13px;
-      line-height:1.7;
+    /* Mobile sticky CTA */
+    .sticky-cta{
+      position:fixed;left:16px;right:16px;bottom:14px;
+      z-index:60;display:none;
+      padding:14px 16px;border-radius:999px;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      color:#003322;font-weight:950;text-decoration:none;text-align:center;
+      box-shadow:0 18px 55px rgba(0,255,133,.22);
     }
+    .sticky-cta small{display:block;font-weight:900;opacity:.82;}
+    @media(max-width:768px){
+      .sticky-cta{display:block;}
+      body{padding-bottom:82px;}
+    }
+
+    footer{margin-top:18px;text-align:center;color:rgba(156,163,175,.92);font-size:13px;line-height:1.7;}
   </style>
 </head>
 
@@ -339,162 +287,315 @@
     </div>
   </header>
 
+  <a class="sticky-cta" href="#swap">
+    Swap / Contribute
+    <small>Verify domain • Confirm address</small>
+  </a>
+
   <div class="wrap">
     <div class="hero">
-      <span class="kicker"><span class="dot"></span> IDO • Swap • Presale Contribution</span>
-      <h1>PULSE IDO Portal</h1>
+      <span class="kicker"><span class="dot"></span> PULSE IDO • Custom Swap UI</span>
+      <h1>IDO Portal</h1>
       <p>
-        Use the built-in swap to acquire SOL/USDC (or other tokens) and participate in the IDO flow.
-        The “Contribute” module below sends SOL to the official presale address via Phantom (transaction signed in-wallet).
-        Always verify the address and domain before sending funds.
+        This is a fully custom PULSE UI. Swaps are built using Jupiter's Swap API under the hood (quote → build tx → sign) while keeping the interface 100% on-brand.
+        Always verify the website domain and the official presale address before signing.
       </p>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="tabSwap" type="button">Swap</button>
+        <button class="tab" id="tabContribute" type="button">Contribute</button>
+        <button class="tab" id="tabSettings" type="button">Settings</button>
+      </div>
     </div>
 
-    <div class="grid">
+    <div class="grid" id="swap">
 
-      <!-- LEFT: Swap -->
-      <div class="card">
-        <h2>Swap (Powered by Jupiter)</h2>
+      <!-- LEFT: SWAP -->
+      <div class="card" id="swapCard">
+        <h2>Swap (PULSE UI)</h2>
         <p class="muted">
-          This embedded swap uses Jupiter’s Terminal/Plugin approach (window.Jupiter.init) and can run directly in plain HTML. [1](https://terminal.jup.ag/)[2](https://dev.jup.ag/tool-kits/plugin)
+          Get a quote, review route & minimum received, then sign the swap transaction in-wallet.
         </p>
-
-        <div style="margin-top:12px;">
-          <div id="integrated-terminal"></div>
-        </div>
 
         <div class="pill">
-          <span><b>Tip:</b> You can keep this integrated terminal for “Buy SOL / Buy USDC” and later add “Buy PLS” when mint is live.</span>
-          <span><b>Mode:</b> Integrated</span>
-        </div>
-      </div>
-
-      <!-- RIGHT: Contribute -->
-      <div class="card">
-        <h2>Contribute (Presale)</h2>
-        <p class="muted">
-          This sends a SOL transfer transaction to the official presale address. Phantom will sign and broadcast it using <code>signAndSendTransaction</code>, the recommended method. [4](https://docs.phantom.com/solana/sending-a-transaction)
-        </p>
-
-        <div class="pill" style="margin-top:12px;">
           <span><b>Wallet:</b> <span id="walletLabel">Not connected</span></span>
           <span><b>Balance:</b> <span id="balanceLabel">—</span></span>
         </div>
 
         <div class="row">
-          <input class="input" id="solAmount" type="number" step="0.01" min="0" placeholder="Amount in SOL" />
-          <button class="btn" id="maxBtn" type="button">Max</button>
+          <select class="select" id="inToken"></select>
+          <input class="input" id="inAmount" type="number" step="0.0001" min="0" placeholder="Amount" />
         </div>
 
         <div class="row">
-          <button class="btn primary" id="contributeBtn" type="button" disabled>Contribute SOL</button>
+          <select class="select" id="outToken"></select>
+          <button class="btn" id="flipBtn" type="button">Flip</button>
+        </div>
+
+        <div class="row">
+          <input class="input" id="customOutMint" placeholder="Optional: custom output mint (e.g. PLS mint)" />
+        </div>
+
+        <div class="pill">
+          <span><b>Slippage:</b> <span id="slipLabel">0.50%</span></span>
+          <span style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn" id="slipDown" type="button">-</button>
+            <button class="btn" id="slipUp" type="button">+</button>
+          </span>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="quoteBtn" type="button" disabled>Get Quote</button>
+          <button class="btn primary" id="swapBtn" type="button" disabled>Swap</button>
+        </div>
+
+        <div class="status" id="swapStatus">
+          <b id="swapStatusTitle">Status</b>
+          <div id="swapStatusMsg"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="margin-bottom:8px;">Quote Preview</h2>
+        <div class="pill">
+          <span><b>Expected Output:</b> <span id="outPreview">—</span></span>
+          <span><b>Min Received:</b> <span id="minPreview">—</span></span>
+        </div>
+        <div class="pill">
+          <span><b>Price Impact:</b> <span id="impactPreview">—</span></span>
+          <span><b>Route:</b> <span id="routePreview">—</span></span>
+        </div>
+
+        <div class="pill">
+          <span><b>Note:</b> Min received is based on your slippage tolerance. If market moves beyond it, swap fails.</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: CONTRIBUTE -->
+      <div class="card" id="contribCard" style="display:none;">
+        <h2>Contribute (Presale)</h2>
+        <p class="muted">
+          Sends a SOL transfer to the official presale address (signed in your wallet).
+        </p>
+
+        <div class="pill">
+          <span><b>Presale Address:</b> <span id="presaleAddr" style="word-break:break-all;"></span></span>
+        </div>
+
+        <div class="row">
+          <input class="input" id="contribAmount" type="number" step="0.01" min="0" placeholder="Amount in SOL" />
+          <button class="btn" id="maxContribBtn" type="button">Max</button>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="contribBtn" type="button" disabled>Contribute SOL</button>
           <button class="btn" id="copyAddrBtn" type="button">Copy Address</button>
         </div>
 
         <div class="pill">
-          <span><b>Presale Address:</b> <span id="presaleAddrLabel" style="word-break:break-all;"></span></span>
+          <span><b>Indicative (UI only):</b> <span id="rateLabel">—</span></span>
+          <span><b>Est. PLS:</b> <span id="estPls">—</span></span>
+        </div>
+
+        <div class="status" id="contribStatus">
+          <b id="contribStatusTitle">Status</b>
+          <div id="contribStatusMsg"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="margin-bottom:8px;">IDO Steps</h2>
+        <div class="steps">
+          <div class="step"><div class="num">1</div><div><h3>Connect Wallet</h3><p>Connect Phantom and confirm the correct domain.</p></div></div>
+          <div class="step"><div class="num">2</div><div><h3>Swap if needed</h3><p>Use the Swap tab to acquire SOL/USDC before contributing.</p></div></div>
+          <div class="step"><div class="num">3</div><div><h3>Contribute</h3><p>Send SOL to the official presale address and save the signature.</p></div></div>
+          <div class="step"><div class="num">4</div><div><h3>Claim later</h3><p>Claim instructions will be published when token launches.</p></div></div>
         </div>
 
         <div class="pill">
-          <span><b>Indicative rate:</b> <span id="rateLabel"></span></span>
-          <span><b>Estimated PLS:</b> <span id="estPls">—</span></span>
-        </div>
-
-        <div class="status" id="statusBox">
-          <b id="statusTitle">Status</b>
-          <div id="statusMsg"></div>
-        </div>
-
-        <div style="margin-top:14px;">
-          <h2 style="margin-bottom:8px;">IDO Steps</h2>
-          <div class="steps">
-            <div class="step">
-              <div class="num">1</div>
-              <div>
-                <h3>Connect Wallet</h3>
-                <p>Connect Phantom and confirm you are on the correct domain.</p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="num">2</div>
-              <div>
-                <h3>Swap if needed</h3>
-                <p>Use the embedded swap to acquire SOL/USDC and prepare your contribution.</p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="num">3</div>
-              <div>
-                <h3>Contribute</h3>
-                <p>Send SOL to the presale address. You’ll receive a transaction signature for verification.</p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="num">4</div>
-              <div>
-                <h3>Claim (later)</h3>
-                <p>When PLS token launches, claim instructions and on-chain claim flow will be published.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="pill" style="margin-top:14px;">
-          <span><b>Safety:</b> Never share seed phrases. Verify address twice. Small test tx recommended.</span>
+          <span><b>Safety:</b> Never share seed phrases. Verify address twice. Start with a small test tx.</span>
         </div>
       </div>
+
+      <!-- RIGHT: SETTINGS -->
+      <div class="card" id="settingsCard" style="display:none;">
+        <h2>Settings</h2>
+        <p class="muted">
+          Swap API can be used via the free <code>lite-api</code> endpoint. Pro endpoint requires an API key.
+        </p>
+
+        <div class="pill">
+          <span><b>Network:</b> <span id="netLabel">mainnet-beta</span></span>
+          <span><b>API Mode:</b> <span id="apiModeLabel">lite-api (free)</span></span>
+        </div>
+
+        <div class="row">
+          <select class="select" id="networkSelect">
+            <option value="mainnet-beta">mainnet-beta</option>
+            <option value="devnet">devnet</option>
+          </select>
+          <input class="input" id="apiKeyInput" placeholder="Optional: Jupiter API Key (Pro mode)" />
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="applySettingsBtn" type="button">Apply</button>
+        </div>
+
+        <div class="pill">
+          <span><b>Tip:</b> Use devnet for UI testing. For real swaps, Jupiter Ultra/Swap APIs are primarily used on mainnet.</span>
+        </div>
+      </div>
+
     </div>
 
     <footer>
-      © 2026 PULSE Protocol • This page is informational and does not constitute financial advice.
+      © 2026 PULSE Protocol • This interface is informational and not financial advice.
     </footer>
   </div>
 
   <script>
-    /***************
-     * CONFIG — EDIT THESE
-     ***************/
+    /*********************************
+     * CONFIG (EDIT THESE)
+     *********************************/
     const CONFIG = {
-      // Replace with YOUR official presale receiving wallet address:
+      // Official presale receiving address (REPLACE!)
       PRESALE_RECIPIENT: "11111111111111111111111111111111",
 
-      // Choose network: "mainnet-beta" or "devnet"
+      // Optional: PLS mint (set later)
+      PLS_MINT: "",
+
+      // Default network
       NETWORK: "mainnet-beta",
 
-      // Optional: indicative presale price (NOT guaranteed, just to show meaningful UX)
-      // Example: 1 PLS = $0.0025
-      PLS_PRICE_USD: 0.0025,
+      // Jupiter Swap API endpoints:
+      // Free tier base: https://lite-api.jup.ag/swap/v1 (rate limited)
+      // Pro base:  https://api.jup.ag/swap/v1 (requires API key)
+      API_BASE_LITE: "https://lite-api.jup.ag/swap/v1",
+      API_BASE_PRO:  "https://api.jup.ag/swap/v1",
 
-      // Optional: SOL price estimate (only for UI). Use a fixed number or fetch later from an API.
-      SOL_USD_ESTIMATE: 100
+      // UI-only pricing estimates (not on-chain)
+      SOL_USD_ESTIMATE: 100,
+      PLS_PRICE_USD: 0.0025
     };
 
-    /***************
-     * Helpers
-     ***************/
+    /*********************************
+     * Token List (limited, safe defaults)
+     *********************************/
+    const TOKENS = [
+      {
+        symbol: "SOL",
+        name: "Solana",
+        mint: "So11111111111111111111111111111111111111112",
+        decimals: 9
+      },
+      {
+        symbol: "USDC",
+        name: "USD Coin",
+        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        decimals: 6
+      },
+      {
+        symbol: "USDT",
+        name: "Tether USD",
+        mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        decimals: 6
+      }
+    ];
+
+    /*********************************
+     * DOM
+     *********************************/
     const walletBtn = document.getElementById("walletBtn");
-    const contributeBtn = document.getElementById("contributeBtn");
-    const maxBtn = document.getElementById("maxBtn");
-    const solAmount = document.getElementById("solAmount");
     const walletLabel = document.getElementById("walletLabel");
     const balanceLabel = document.getElementById("balanceLabel");
-    const presaleAddrLabel = document.getElementById("presaleAddrLabel");
+
+    const inToken = document.getElementById("inToken");
+    const outToken = document.getElementById("outToken");
+    const inAmount = document.getElementById("inAmount");
+    const customOutMint = document.getElementById("customOutMint");
+    const flipBtn = document.getElementById("flipBtn");
+
+    const quoteBtn = document.getElementById("quoteBtn");
+    const swapBtn = document.getElementById("swapBtn");
+
+    const slipLabel = document.getElementById("slipLabel");
+    const slipDown = document.getElementById("slipDown");
+    const slipUp = document.getElementById("slipUp");
+
+    const outPreview = document.getElementById("outPreview");
+    const minPreview = document.getElementById("minPreview");
+    const impactPreview = document.getElementById("impactPreview");
+    const routePreview = document.getElementById("routePreview");
+
+    const swapStatus = document.getElementById("swapStatus");
+    const swapStatusTitle = document.getElementById("swapStatusTitle");
+    const swapStatusMsg = document.getElementById("swapStatusMsg");
+
+    const contribCard = document.getElementById("contribCard");
+    const swapCard = document.getElementById("swapCard");
+    const settingsCard = document.getElementById("settingsCard");
+
+    const tabSwap = document.getElementById("tabSwap");
+    const tabContribute = document.getElementById("tabContribute");
+    const tabSettings = document.getElementById("tabSettings");
+
+    const presaleAddr = document.getElementById("presaleAddr");
+    const contribAmount = document.getElementById("contribAmount");
+    const maxContribBtn = document.getElementById("maxContribBtn");
+    const contribBtn = document.getElementById("contribBtn");
     const copyAddrBtn = document.getElementById("copyAddrBtn");
     const rateLabel = document.getElementById("rateLabel");
     const estPls = document.getElementById("estPls");
 
-    const statusBox = document.getElementById("statusBox");
-    const statusTitle = document.getElementById("statusTitle");
-    const statusMsg = document.getElementById("statusMsg");
+    const contribStatus = document.getElementById("contribStatus");
+    const contribStatusTitle = document.getElementById("contribStatusTitle");
+    const contribStatusMsg = document.getElementById("contribStatusMsg");
 
-    presaleAddrLabel.textContent = CONFIG.PRESALE_RECIPIENT;
+    const networkSelect = document.getElementById("networkSelect");
+    const apiKeyInput = document.getElementById("apiKeyInput");
+    const applySettingsBtn = document.getElementById("applySettingsBtn");
+    const netLabel = document.getElementById("netLabel");
+    const apiModeLabel = document.getElementById("apiModeLabel");
 
-    function showStatus(type, title, msgHtml){
-      statusBox.classList.remove("good","warn","bad");
-      statusBox.classList.add("show");
-      if(type) statusBox.classList.add(type);
-      statusTitle.textContent = title;
-      statusMsg.innerHTML = msgHtml;
+    presaleAddr.textContent = CONFIG.PRESALE_RECIPIENT;
+
+    /*********************************
+     * Helpers UI
+     *********************************/
+    function setActiveTab(which){
+      [tabSwap, tabContribute, tabSettings].forEach(t => t.classList.remove("active"));
+      swapCard.style.display = "none";
+      contribCard.style.display = "none";
+      settingsCard.style.display = "none";
+
+      if(which === "swap"){
+        tabSwap.classList.add("active");
+        swapCard.style.display = "block";
+      } else if(which === "contribute"){
+        tabContribute.classList.add("active");
+        contribCard.style.display = "block";
+      } else {
+        tabSettings.classList.add("active");
+        settingsCard.style.display = "block";
+      }
+    }
+    tabSwap.addEventListener("click", ()=>setActiveTab("swap"));
+    tabContribute.addEventListener("click", ()=>setActiveTab("contribute"));
+    tabSettings.addEventListener("click", ()=>setActiveTab("settings"));
+
+    function showSwapStatus(type, title, html){
+      swapStatus.classList.remove("good","warn","bad");
+      swapStatus.classList.add("show");
+      if(type) swapStatus.classList.add(type);
+      swapStatusTitle.textContent = title;
+      swapStatusMsg.innerHTML = html;
+    }
+    function showContribStatus(type, title, html){
+      contribStatus.classList.remove("good","warn","bad");
+      contribStatus.classList.add("show");
+      if(type) contribStatus.classList.add(type);
+      contribStatusTitle.textContent = title;
+      contribStatusMsg.innerHTML = html;
     }
 
     function addRipple(e){
@@ -504,129 +605,307 @@
       const radius = diameter / 2;
       circle.classList.add("ripple");
       circle.style.width = circle.style.height = `${diameter}px`;
-
       const rect = btn.getBoundingClientRect();
       circle.style.left = `${e.clientX - rect.left - radius}px`;
       circle.style.top  = `${e.clientY - rect.top  - radius}px`;
-
       const existing = btn.querySelector(".ripple");
       if(existing) existing.remove();
       btn.appendChild(circle);
     }
 
-    // Initialize rate label
-    function updateRateAndEstimate(){
-      const sol = Number(solAmount.value || 0);
-      const usd = sol * CONFIG.SOL_USD_ESTIMATE;
-      const pls = CONFIG.PLS_PRICE_USD > 0 ? (usd / CONFIG.PLS_PRICE_USD) : 0;
-      rateLabel.textContent = `1 SOL ≈ $${CONFIG.SOL_USD_ESTIMATE} • 1 PLS ≈ $${CONFIG.PLS_PRICE_USD}`;
-      estPls.textContent = sol > 0 ? `${Math.floor(pls).toLocaleString()} PLS (indicative)` : "—";
-    }
-    solAmount.addEventListener("input", updateRateAndEstimate);
-    updateRateAndEstimate();
-
-    // Copy address
-    copyAddrBtn.addEventListener("click", async () => {
-      try{
-        await navigator.clipboard.writeText(CONFIG.PRESALE_RECIPIENT);
-        showStatus("good","Copied","Presale address copied to clipboard.");
-      }catch{
-        showStatus("warn","Copy failed","Could not access clipboard. Copy manually from the address line.");
-      }
-    });
-
-    /***************
-     * Jupiter Swap Embed
-     * Setup per Jupiter Terminal docs: include script + call window.Jupiter.init({...}) [1](https://terminal.jup.ag/)[2](https://dev.jup.ag/tool-kits/plugin)
-     ***************/
-    function initJupiter(){
-      if(!window.Jupiter || !window.Jupiter.init){
-        showStatus("warn","Swap","Jupiter Terminal failed to load. Please refresh.");
-        return;
-      }
-
-      window.Jupiter.init({
-        displayMode: "integrated",
-        integratedTargetId: "integrated-terminal",
-        // You can tweak initial form settings later (mints/amounts).
-        // formProps: { initialInputMint: "...", initialOutputMint: "..." }
+    /*********************************
+     * Populate token selects
+     *********************************/
+    function renderTokenOptions(sel){
+      sel.innerHTML = "";
+      TOKENS.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.mint;
+        opt.textContent = `${t.symbol} — ${t.name}`;
+        sel.appendChild(opt);
       });
     }
-    // Init after a tick
-    setTimeout(initJupiter, 50);
+    renderTokenOptions(inToken);
+    renderTokenOptions(outToken);
+    inToken.value = TOKENS[0].mint; // SOL
+    outToken.value = TOKENS[1].mint; // USDC
 
-    /***************
-     * Wallet + Contribute
-     * We'll use @solana/web3.js browser build (unpkg) for Transaction creation. nd sends using signAndSendTransaction (recommended). [4](https://docs.phantom.com/solana/sending-a-transaction)
-     ***************/
+    flipBtn.addEventListener("click", () => {
+      const a = inToken.value;
+      inToken.value = outToken.value;
+      outToken.value = a;
+      clearQuote();
+    });
+
+    function tokenByMint(mint){ return TOKENS.find(t => t.mint === mint); }
+    function decimalsForMint(mint){
+      const t = tokenByMint(mint);
+      return t ? t.decimals : 6;
+    }
+
+    /*********************************
+     * Settings (API base + key + network)
+     *********************************/
+    let apiKey = "";
+    let apiBase = CONFIG.API_BASE_LITE;
+
+    function applySettings(){
+      CONFIG.NETWORK = networkSelect.value;
+      apiKey = (apiKeyInput.value || "").trim();
+
+      // If API key exists => Pro endpoint, else Lite
+      apiBase = apiKey ? CONFIG.API_BASE_PRO : CONFIG.API_BASE_LITE;
+      netLabel.textContent = CONFIG.NETWORK;
+      apiModeLabel.textContent = apiKey ? "Pro (api.jup.ag)" : "lite-api (free)";
+      showSwapStatus("good","Settings applied", `Network: <code>${CONFIG.NETWORK}</code><br/>API: <code>${apiBase}</code>`);
+    }
+    applySettingsBtn.addEventListener("click", applySettings);
+    networkSelect.value = CONFIG.NETWORK;
+
+    /*********************************
+     * Wallet + connection
+     *********************************/
     const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL, clusterApiUrl } = solanaWeb3;
 
     let provider = null;
     let connection = null;
     let connectedKey = null;
-    let cachedBalance = 0;
+    let cachedSol = 0;
 
     function getProvider(){
-      // Phantom usually exposes window.solana
       if(window.solana && window.solana.isPhantom) return window.solana;
-      // Some setups may use window.phantom.solana
       if(window.phantom?.solana?.isPhantom) return window.phantom.solana;
       return null;
     }
+    function endpoint(){ return clusterApiUrl(CONFIG.NETWORK); }
 
-    function getEndpoint(){
-      // Use clusterApiUrl for simplicity
-      return clusterApiUrl(CONFIG.NETWORK);
-    }
-
-    async function refreshBalance(){
+    async function refreshSolBalance(){
       if(!connectedKey || !connection) return;
       const lamports = await connection.getBalance(connectedKey, "confirmed");
-      cachedBalance = lamports / LAMPORTS_PER_SOL;
-      balanceLabel.textContent = `${cachedBalance.toFixed(4)} SOL`;
+      cachedSol = lamports / LAMPORTS_PER_SOL;
+      balanceLabel.textContent = `${cachedSol.toFixed(4)} SOL`;
     }
 
     async function connectWallet(e){
       addRipple(e);
       provider = getProvider();
       if(!provider){
-        showStatus("bad","Wallet","Phantom not detected. Please install Phantom wallet.");
+        showSwapStatus("bad","Wallet", "Phantom not detected. Install Phantom to continue.");
         return;
       }
-
       try{
         const resp = await provider.connect();
         connectedKey = resp.publicKey;
         walletLabel.textContent = connectedKey.toString();
-        connection = new Connection(getEndpoint(), "confirmed");
-        contributeBtn.disabled = false;
-        await refreshBalance();
-        showStatus("good","Wallet connected","You can now contribute SOL. Always verify the presale address.");
+        connection = new Connection(endpoint(), "confirmed");
+
+        quoteBtn.disabled = false;
+        contribBtn.disabled = false;
+
+        await refreshSolBalance();
+        showSwapStatus("good","Connected", "Wallet connected. You can now request quotes and swap.");
+      }catch{
+        showSwapStatus("warn","Wallet", "Connection cancelled or failed.");
+      }
+    }
+    walletBtn.addEventListener("click", connectWallet);
+
+    /*********************************
+     * Slippage controls
+     *********************************/
+    let slippageBps = 50; // 0.50%
+    function updateSlippageLabel(){
+      slipLabel.textContent = `${(slippageBps/100).toFixed(2)}%`;
+    }
+    updateSlippageLabel();
+    slipDown.addEventListener("click", ()=>{ slippageBps = Math.max(10, slippageBps - 10); updateSlippageLabel(); clearQuote(); });
+    slipUp.addEventListener("click", ()=>{ slippageBps = Math.min(500, slippageBps + 10); updateSlippageLabel(); clearQuote(); });
+
+    /*********************************
+     * Swap API: quote + swap
+     * Flow: GET /quote -> POST /swap (returns base64 tx)
+     *********************************/
+    let lastQuote = null;
+
+    function clearQuote(){
+      lastQuote = null;
+      outPreview.textContent = "—";
+      minPreview.textContent = "—";
+      impactPreview.textContent = "—";
+      routePreview.textContent = "—";
+      swapBtn.disabled = true;
+    }
+
+    inToken.addEventListener("change", clearQuote);
+    outToken.addEventListener("change", clearQuote);
+    inAmount.addEventListener("input", clearQuote);
+    customOutMint.addEventListener("input", clearQuote);
+
+    function toRawAmount(amountUi, decimals){
+      const n = Number(amountUi);
+      if(!n || n <= 0) return null;
+      return String(Math.round(n * Math.pow(10, decimals)));
+    }
+
+    function formatFromRaw(rawStr, decimals){
+      const raw = Number(rawStr);
+      const v = raw / Math.pow(10, decimals);
+      return v.toLocaleString(undefined, { maximumFractionDigits: Math.min(6, decimals) });
+    }
+
+    async function getQuote(){
+      if(!connectedKey) return showSwapStatus("warn","Swap", "Connect wallet first.");
+      const inMint = inToken.value;
+      const outMint = (customOutMint.value || "").trim() || outToken.value;
+
+      // Validate mint string a bit
+      try{ new PublicKey(inMint); new PublicKey(outMint); }catch{
+        return showSwapStatus("warn","Invalid mint", "One of the mint addresses is invalid.");
+      }
+
+      const inDec = decimalsForMint(inMint);
+      const raw = toRawAmount(inAmount.value, inDec);
+      if(!raw) return showSwapStatus("warn","Amount", "Enter a valid input amount.");
+
+      showSwapStatus("warn","Quoting...", "Fetching the best route...");
+
+      const url = new URL(apiBase + "/quote");
+      url.searchParams.set("inputMint", inMint);
+      url.searchParams.set("outputMint", outMint);
+      url.searchParams.set("amount", raw);
+      url.searchParams.set("slippageBps", String(slippageBps));
+      url.searchParams.set("swapMode", "ExactIn");
+      url.searchParams.set("restrictIntermediateTokens", "true");
+      url.searchParams.set("maxAccounts", "64");
+
+      const headers = {};
+      if(apiKey) headers["x-api-key"] = apiKey; // Pro requires API key (optional)
+
+      try{
+        const res = await fetch(url.toString(), { headers });
+        const quote = await res.json();
+        if(!res.ok) throw new Error(quote?.error || "Quote failed");
+
+        lastQuote = quote;
+
+        // Preview output/min threshold
+        const outDec = decimalsForMint(outMint);
+        outPreview.textContent = `${formatFromRaw(quote.outAmount, outDec)} (raw)`;
+        minPreview.textContent = `${formatFromRaw(quote.otherAmountThreshold, outDec)} (min)`;
+        impactPreview.textContent = quote.priceImpactPct ? `${quote.priceImpactPct}` : "—";
+
+        // Route labels
+        const route = (quote.routePlan || [])
+          .map(p => p.swapInfo?.label)
+          .filter(Boolean)
+          .join(" → ");
+        routePreview.textContent = route || "—";
+
+        swapBtn.disabled = false;
+        showSwapStatus("good","Quote ready", "Review min received and route, then execute swap.");
       }catch(err){
-        showStatus("warn","Wallet","Connection cancelled or failed.");
+        swapBtn.disabled = true;
+        showSwapStatus("bad","Quote failed", "Could not fetch quote. Try again or adjust amount/slippage.");
       }
     }
 
-    walletBtn.addEventListener("click", connectWallet);
+    quoteBtn.addEventListener("click", getQuote);
 
-    maxBtn.addEventListener("click", async () => {
-      if(!connectedKey) return showStatus("warn","Max","Connect wallet first.");
-      await refreshBalance();
-      // Keep a small buffer for fees
-      const max = Math.max(0, cachedBalance - 0.002);
-      solAmount.value = max.toFixed(4);
-      updateRateAndEstimate();
+    async function doSwap(){
+      if(!provider || !connectedKey) return showSwapStatus("warn","Swap", "Connect wallet first.");
+      if(!lastQuote) return showSwapStatus("warn","Swap", "Get a quote first.");
+
+      showSwapStatus("warn","Building transaction...", "Preparing swap transaction...");
+
+      const headers = { "Content-Type":"application/json" };
+      if(apiKey) headers["x-api-key"] = apiKey;
+
+      try{
+        // Request base64 unsigned swap transaction from Swap API
+        // We request legacy tx for straightforward Phantom signAndSendTransaction
+        const swapRes = await fetch(apiBase + "/swap", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            quoteResponse: lastQuote,
+            userPublicKey: connectedKey.toString(),
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            dynamicSlippage: true,
+            asLegacyTransaction: true
+          })
+        });
+
+        const swapJson = await swapRes.json();
+        if(!swapRes.ok) throw new Error(swapJson?.error || "Swap build failed");
+
+        const txBase64 = swapJson.swapTransaction;
+        if(!txBase64) throw new Error("No transaction returned");
+
+        // Deserialize legacy Transaction
+        const txBytes = Uint8Array.from(atob(txBase64), c => c.charCodeAt(0));
+        const tx = Transaction.from(txBytes);
+
+        showSwapStatus("warn","Awaiting signature...", "Confirm the swap in your wallet.");
+
+        // Phantom signs + sends (recommended)
+        const { signature } = await provider.signAndSendTransaction(tx);
+
+        showSwapStatus(
+          "good",
+          "Swap submitted",
+          `Signature: <code>${signature}</code><br/>
+           View: https://solscan.io/tx/${signature}Solscan</a>`
+        );
+
+        setTimeout(refreshSolBalance, 1800);
+      }catch(err){
+        showSwapStatus("bad","Swap failed", "Transaction was cancelled or failed. Try again.");
+      }
+    }
+
+    swapBtn.addEventListener("click", doSwap);
+
+    /*********************************
+     * Contribute module (SOL transfer)
+     *********************************/
+    presaleAddr.textContent = CONFIG.PRESALE_RECIPIENT;
+
+    function updateContributionEstimate(){
+      const sol = Number(contribAmount.value || 0);
+      const usd = sol * CONFIG.SOL_USD_ESTIMATE;
+      const pls = CONFIG.PLS_PRICE_USD > 0 ? (usd / CONFIG.PLS_PRICE_USD) : 0;
+      rateLabel.textContent = `1 SOL ≈ $${CONFIG.SOL_USD_ESTIMATE} • 1 PLS ≈ $${CONFIG.PLS_PRICE_USD}`;
+      estPls.textContent = sol > 0 ? `${Math.floor(pls).toLocaleString()} PLS (indicative)` : "—";
+    }
+    contribAmount.addEventListener("input", updateContributionEstimate);
+    updateContributionEstimate();
+
+    copyAddrBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(CONFIG.PRESALE_RECIPIENT);
+        showContribStatus("good","Copied", "Presale address copied.");
+      }catch{
+        showContribStatus("warn","Copy failed", "Clipboard blocked. Copy manually.");
+      }
+    });
+
+    maxContribBtn.addEventListener("click", async () => {
+      if(!connectedKey) return showContribStatus("warn","Max", "Connect wallet first.");
+      await refreshSolBalance();
+      const max = Math.max(0, cachedSol - 0.002);
+      contribAmount.value = max.toFixed(4);
+      updateContributionEstimate();
     });
 
     async function contribute(){
-      if(!provider || !connectedKey) return showStatus("warn","Contribute","Connect wallet first.");
-      const amountSol = Number(solAmount.value);
-      if(!amountSol || amountSol <= 0) return showStatus("warn","Contribute","Enter a valid SOL amount.");
+      if(!provider || !connectedKey) return showContribStatus("warn","Contribute", "Connect wallet first.");
+      const amountSol = Number(contribAmount.value);
+      if(!amountSol || amountSol <= 0) return showContribStatus("warn","Contribute", "Enter a valid SOL amount.");
 
-      // Basic sanity buffer
-      await refreshBalance();
-      if(amountSol > cachedBalance - 0.001){
-        return showStatus("warn","Insufficient balance","Leave a small amount for fees.");
+      await refreshSolBalance();
+      if(amountSol > cachedSol - 0.001){
+        return showContribStatus("warn","Insufficient balance", "Leave a small amount for fees.");
       }
 
       try{
@@ -634,36 +913,36 @@
         const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
         const tx = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: connectedKey,
-            toPubkey: recipient,
-            lamports
-          })
+          SystemProgram.transfer({ fromPubkey: connectedKey, toPubkey: recipient, lamports })
         );
         tx.feePayer = connectedKey;
         tx.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
 
-        // Phantom recommended method: sign and send with provider.signAndSendTransaction [4](https://docs.phantom.com/solana/sending-a-transaction)
+        showContribStatus("warn","Awaiting signature...", "Confirm the transaction in your wallet.");
         const { signature } = await provider.signAndSendTransaction(tx);
 
-        showStatus(
+        showContribStatus(
           "good",
           "Transaction sent",
           `Signature: <code>${signature}</code><br/>
-           You can verify it in an explorer: <a href="https://solscan.io/tx/${signature}" target="_blank" rel="noopener">View on Solscan</a>`
+           View: https://solscan.io/tx/${signature}Solscan</a>`
         );
-
-        // refresh balance after a short delay
-        setTimeout(refreshBalance, 1800);
-      }catch(err){
-        showStatus("bad","Transaction failed","User cancelled or transaction failed. Please try again.");
+        setTimeout(refreshSolBalance, 1800);
+      }catch{
+        showContribStatus("bad","Transaction failed", "User cancelled or transaction failed.");
       }
     }
+    contribBtn.addEventListener("click", contribute);
 
-    contributeBtn.addEventListener("click", contribute);
+    // Disable buttons until wallet connected
+    quoteBtn.disabled = true;
+    swapBtn.disabled = true;
+    contribBtn.disabled = true;
 
-    // Disable contribute until connected
-    contributeBtn.disabled = true;
+    // If you want to prefill PLS mint later:
+    if(CONFIG.PLS_MINT){
+      customOutMint.value = CONFIG.PLS_MINT;
+    }
   </script>
 </body>
 </html>
