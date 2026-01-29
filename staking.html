@@ -6,6 +6,8 @@
   <title>PULSE – Staking</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
   <style>
@@ -19,12 +21,24 @@
       --border:#111;
       --cardBorder:rgba(255,255,255,.06);
       --radius:16px;
+      --shadow:0 18px 70px rgba(0,0,0,.55);
     }
     *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
-    body{background:var(--bg);color:var(--text);min-height:100vh}
-    .container{max-width:1100px;margin:auto;padding:28px 18px}
-    a{color:var(--text);text-decoration:none;font-weight:800}
+    body{background:var(--bg);color:var(--text);min-height:100vh; overflow-x:hidden}
+    a{color:var(--text);text-decoration:none;font-weight:900}
     a:hover{color:var(--primary)}
+
+    /* Background glow */
+    body::before{
+      content:"";
+      position:fixed;inset:0;
+      background:radial-gradient(circle, rgba(0,255,133,0.035), transparent 70%);
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    /* ====== ORIGINAL UI (kept) ====== */
+    .container{max-width:1100px;margin:auto;padding:28px 18px}
     .top{
       display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
       margin-bottom:18px;
@@ -76,63 +90,240 @@
     }
     .note{margin-top:16px;color:var(--muted);font-size:13px;line-height:1.7}
     .footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* Blur the entire app behind the modal */
+    .app{
+      filter: blur(9px) saturate(0.95) brightness(0.85);
+      transform: scale(1.01);
+      transition: .25s ease;
+      pointer-events:none; /* prevents interaction with blurred UI */
+      user-select:none;
+    }
+
+    /* ====== FULL-PAGE GLASS OVERLAY ====== */
+    .overlay{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal{
+      width:min(760px, 100%);
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      box-shadow: var(--shadow);
+      padding:22px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .modal::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:radial-gradient(circle at 20% 20%, rgba(0,255,133,.18), transparent 45%),
+                 radial-gradient(circle at 80% 0%, rgba(0,191,165,.12), transparent 55%);
+      pointer-events:none;
+    }
+
+    .modal-inner{
+      position:relative;
+      z-index:1;
+      padding:10px;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(0,255,133,.22);
+      background:rgba(0,0,0,.22);
+      color:var(--muted);
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .tag .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      box-shadow:0 0 18px rgba(0,255,133,.30);
+    }
+
+    .modal h1{
+      margin-top:14px;
+      color:var(--primary);
+      letter-spacing:-.4px;
+      font-size:26px;
+    }
+    .modal p{
+      margin-top:10px;
+      color:var(--muted);
+      line-height:1.85;
+      font-size:14.5px;
+      max-width: 64ch;
+    }
+
+    .modal ul{
+      margin-top:12px;
+      padding-left:18px;
+      color:var(--muted);
+      line-height:1.85;
+      font-size:14px;
+    }
+    .modal li{margin:6px 0;}
+
+    .actions{
+      margin-top:16px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .action-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      font-weight:950;
+      cursor:pointer;
+      transition:.18s ease;
+      text-decoration:none;
+      min-width: 160px;
+    }
+    .action-btn.primary{
+      border-color: rgba(0,255,133,.35);
+      background: linear-gradient(135deg, rgba(0,255,133,.20), rgba(0,191,165,.12));
+    }
+    .action-btn.primary:hover{
+      background: linear-gradient(135deg,var(--primary),var(--secondary));
+      color:#001b10;
+    }
+    .action-btn:hover{
+      border-color: rgba(0,255,133,.25);
+    }
+
+    .small{
+      margin-top:12px;
+      color:rgba(156,163,175,.92);
+      font-size:12.5px;
+      line-height:1.7;
+    }
+
+    @media(max-width:520px){
+      .action-btn{flex:1;}
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="top">
-      <div class="logo">PULSE</div>
-      <div class="pill">
-        <a class="btn" href="index.html">Home</a>
-        <a class="btn" href="whitepaper.html">White Paper</a>
-        <button class="btn primary" id="connectBtn">Connect Wallet</button>
-      </div>
-    </div>
 
-    <div class="card">
-      <h2>Staking (Planned)</h2>
-      <p>
-        This page is the staking interface template. When staking is activated, you’ll see live metrics here:
-        APR sources, reward schedule, lock/unstake rules, and distribution frequency — all documented.
-      </p>
-      <div class="note">
-        <b>Important:</b> This is a UI template. No on-chain staking is executed here yet.
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Your Position</h2>
-        <div class="row"><span>Wallet</span><span id="wallet">Not connected</span></div>
-        <div class="row"><span>Staked</span><span>0 PLS</span></div>
-        <div class="row"><span>Pending Rewards</span><span>0.00 PLS</span></div>
-      </div>
-
-      <div class="card">
-        <h2>Stake</h2>
-        <p>Choose an amount to stake. (UI only)</p>
-        <input class="input" placeholder="Amount (PLS)" />
-        <div class="row">
-          <button class="btn primary" style="flex:1">Stake (UI)</button>
-          <button class="btn" style="flex:1">Max (UI)</button>
+  <!-- ====== UNDERLAY: original staking UI kept (blurred) ====== -->
+  <div class="app">
+    <div class="container">
+      <div class="top">
+        <div class="logo">PULSE</div>
+        <div class="pill">
+          <a href="index.html">Home</a>
+          <a href="whitepaper.html">White Paper</a>
+          <button class="btn primary" id="connectBtn">Connect Wallet</button>
         </div>
       </div>
 
       <div class="card">
-        <h2>Unstake</h2>
-        <p>Unstaking rules will be published before activation.</p>
-        <input class="input" placeholder="Amount (PLS)" />
-        <div class="row">
-          <button class="btn" style="flex:1">Unstake (UI)</button>
-          <button class="btn" style="flex:1">Claim (UI)</button>
+        <h2>Staking (Planned)</h2>
+        <p>
+          This page is the staking interface template. When staking is activated, you’ll see live metrics here:
+          APR sources, reward schedule, lock/unstake rules, and distribution frequency — all documented.
+        </p>
+        <div class="note">
+          <b>Important:</b> This is a UI template. No on-chain staking is executed here yet.
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Your Position</h2>
+          <div class="row"><span>Wallet</span><span id="wallet">Not connected</span></div>
+          <div class="row"><span>Staked</span><span>0 PLS</span></div>
+          <div class="row"><span>Pending Rewards</span><span>0.00 PLS</span></div>
+        </div>
+
+        <div class="card">
+          <h2>Stake</h2>
+          <p>Choose an amount to stake. (UI only)</p>
+          <input class="input" placeholder="Amount (PLS)" />
+          <div class="row">
+            <button class="btn primary" style="flex:1">Stake (UI)</button>
+            <button class="btn" style="flex:1">Max (UI)</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Unstake</h2>
+          <p>Unstaking rules will be published before activation.</p>
+          <input class="input" placeholder="Amount (PLS)" />
+          <div class="row">
+            <button class="btn" style="flex:1">Unstake (UI)</button>
+            <button class="btn" style="flex:1">Claim (UI)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">© 2026 PULSE Protocol</div>
+    </div>
+  </div>
+
+  <!-- ====== OVERLAY: professional message ====== -->
+  <div class="overlay" role="dialog" aria-modal="true" aria-label="Staking availability notice">
+    <div class="modal">
+      <div class="modal-inner">
+        <span class="tag"><span class="dot"></span> Staking Status</span>
+
+        <h1>Staking Will Be Enabled After Token Launch</h1>
+        <p>
+          The staking module is currently in <b>pre‑launch</b> mode. Once the PLS token is officially launched and
+          the staking contracts are deployed, this page will become fully operational.
+        </p>
+
+        <ul>
+          <li>Staking rules (lock/unlock, distribution cadence) will be published before activation.</li>
+          <li>Reward sources and parameters will be documented in the docs and linked here.</li>
+          <li>We prioritize transparency and security — no “silent” activations.</li>
+        </ul>
+
+        <div class="actions">
+          <a class="action-btn primary" href="docs.html">Read Staking Docs</a>
+          <a class="action-btn" href="index.html">Back to Home</a>
+          <a class="action-btn" href="whitepaper.html">Open White Paper</a>
+        </div>
+
+        <div class="small">
+          <b>Security note:</b> Always verify the domain before connecting a wallet. PULSE will never request your seed phrase.
         </div>
       </div>
     </div>
-
-    <div class="footer">© 2026 PULSE Protocol</div>
   </div>
 
   <script>
+    // Keep wallet connect logic present (but UI is disabled behind overlay).
+    // When you later enable staking, you can remove pointer-events:none from .app
+    // and optionally hide the overlay once staking is live.
+
     const walletEl = document.getElementById("wallet");
     document.getElementById("connectBtn").addEventListener("click", async () => {
       try{
@@ -142,4 +333,7 @@
       }catch(e){
         alert("Connection cancelled.");
       }
-   
+    });
+  </script>
+</body>
+</html>
