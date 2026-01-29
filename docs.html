@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PULSE – Docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap
+  <style>
+    :root{--bg:#050608;--bg2:#0B0F14;--primary:#00FF85;--text:#E5E7EB;--muted:#9CA3AF;--cardBorder:rgba(255,255,255,.06);--radius:16px}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
+    body{background:var(--bg);color:var(--text)}
+    .container{max-width:980px;margin:auto;padding:34px 18px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+    .logo{font-size:26px;font-weight:950;color:var(--primary)}
+    a{color:var(--text);text-decoration:none;font-weight:900}
+    a:hover{color:var(--primary)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .card{border:1px solid var(--cardBorder);background:rgba(255,255,255,.02);border-radius:var(--radius);padding:18px}
+    .card h2{color:var(--primary);font-size:18px;margin-bottom:8px}
+    .card p{color:var(--muted);line-height:1.8}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top">
+      <div class="logo">PULSE</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        index.htmlHome</a>
+        whitepaper.htmlWhite Paper</a>
+        staking.htmlStaking</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Getting Started</h2>
+        <p>What PULSE is, how pools work, and how to read disclosures and reporting.</p>
+      </div>
+      <div class="card">
+        <h2>Pools & Disclosures</h2>
+        <p>Pool terms: duration, caps, fees (if any), payout schedule, and known risks.</p>
+      </div>
+      <div class="card">
+        <h2>Staking</h2>
+        <p>Staking rules, emissions (if any), lock/unstake, and reward distribution cadence.</p>
+      </div>
+      <div class="card">
+        <h2>Governance</h2>
+        <p>Proposal flow, voting, parameter changes, and treasury operations over time.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

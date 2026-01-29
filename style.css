@@ -1,0 +1,107 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Inter,system-ui;
+background:#050608;
+color:white;
+overflow-x:hidden;
+}
+::-webkit-scrollbar{width:0}
+
+.navbar{
+display:flex;
+justify-content:space-between;
+padding:20px 40px;
+background:#050608;
+}
+.logo{
+font-size:32px;
+font-weight:800;
+color:#00FF85;
+}
+nav a{
+margin-left:20px;
+color:white;
+text-decoration:none;
+}
+.btn,.cta{
+background:#00FF85;
+color:black;
+padding:10px 20px;
+border-radius:10px;
+}
+
+.hero{
+text-align:center;
+padding:120px 20px;
+}
+.hero h1{
+font-size:64px;
+color:#00FF85;
+}
+
+.features{
+display:flex;
+justify-content:center;
+gap:20px;
+padding:40px;
+flex-wrap:wrap;
+}
+.feature span{
+border:1px solid #00FF85;
+padding:10px 18px;
+border-radius:20px;
+color:#00FF85;
+}
+
+.section-title{
+text-align:center;
+font-size:36px;
+margin:80px 0 40px;
+}
+
+.roadmap-timeline{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+padding:0 40px 80px;
+}
+.roadmap-step{
+background:#0B0F14;
+padding:30px;
+border-left:4px solid #00FF85;
+border-radius:16px;
+}
+.roadmap-step span{color:#00FF85;font-weight:700}
+.roadmap-step h3{margin:10px 0;color:#00bfa5}
+
+.whitepaper{
+text-align:center;
+padding:80px 20px;
+}
+
+footer{
+text-align:center;
+padding:30px;
+color:#777;
+}
+
+.ido,.center{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
+}
+.box{
+background:#0B0F14;
+padding:30px;
+border-radius:20px;
+margin-top:20px;
+}
+input,button{
+padding:12px;
+margin-top:10px;
+width:250px;
+border-radius:10px;
+border:none;
+}
