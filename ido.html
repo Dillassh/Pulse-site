@@ -1,239 +1,669 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>PULSE IDO (PLS)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>PULSE – IDO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PULSE IDO: swap via Jupiter, contribute SOL via Phantom, and learn the presale steps." />
 
-<style>
-:root{
- --bg:#050608;
- --bg2:#0B0F14;
- --primary:#00bfa5;
- --accent:#00FF85;
- --text:#FFFFFF;
- --muted:#9CA3AF;
-}
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
 
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui;}
-html,body{
- width:100%;
- height:100%;
- background:var(--bg);
- overflow-x:hidden;
- scrollbar-width:none;
-}
-body::-webkit-scrollbar{display:none;}
+  <!-- Solana web3.js (browser build via unpkg) -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 
-header{
- padding:24px;
- text-align:center;
- border-bottom:1px solid #111;
-}
-header h1{
- font-size:34px;
- color:var(--primary);
- text-shadow:0 0 20px rgba(0,255,133,.8);
-}
+  <!-- Jupiter Terminal (embed swap in plain HTML) -->
+  <script src="https://terminal.jup.ag/main-v4.js"></script>
 
-.container{
- max-width:520px;
- margin:80px auto;
- background:var(--bg2);
- padding:40px;
- border-radius:22px;
- border:1px solid #111;
- box-shadow:0 0 40px rgba(0,0,0,.8);
-}
+  <style>
+    :root{
+      --bg:#050608;
+      --bg2:#0B0F14;
+      --primary:#00FF85;
+      --secondary:#00bfa5;
+      --text:#E5E7EB;
+      --muted:#9CA3AF;
+      --border:#111;
+      --cardBorder:rgba(255,255,255,.06);
+      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --radius:18px;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+      --ok:#22c55e;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
+    html,body{background:var(--bg);color:var(--text);scroll-behavior:smooth}
+    ::-webkit-scrollbar{width:0}
 
-.wallet-btn{
- width:100%;
- padding:14px;
- border-radius:12px;
- background:none;
- border:1px solid var(--primary);
- color:var(--primary);
- font-weight:700;
- cursor:pointer;
- transition:.3s;
- margin-bottom:24px;
-}
-.wallet-btn:hover{
- background:var(--primary);
- color:#000;
-}
+    body::before{
+      content:"";
+      position:fixed;inset:0;
+      background:radial-gradient(circle, rgba(0,255,133,0.035), transparent 70%);
+      pointer-events:none;
+      z-index:-1;
+    }
 
-.select-row{
- display:flex;
- gap:10px;
- margin-bottom:22px;
-}
+    /* Top bar */
+    header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(5,6,8,.88);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      padding:14px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .logo{
+      font-size:26px;
+      font-weight:950;
+      color:var(--primary);
+      letter-spacing:.3px;
+      text-shadow:0 0 20px rgba(0,255,133,.35);
+    }
+    .nav-pill{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      border:1px solid rgba(0,255,133,.25);
+      background:rgba(255,255,255,.02);
+      border-radius:999px;
+      padding:10px;
+    }
+    .nav-link{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:900;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.02);
+      transition:.2s ease;
+    }
+    .nav-link:hover{
+      border-color:rgba(0,255,133,.25);
+      background:rgba(0,255,133,.08);
+      color:var(--primary);
+    }
+    .wallet-btn{
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(0,255,133,.35);
+      padding:10px 14px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(0,255,133,.18), rgba(0,191,165,.10));
+      cursor:pointer;
+      font-weight:950;
+      color:var(--text);
+      transition:transform .16s ease, filter .2s ease, background .2s ease;
+      white-space:nowrap;
+      will-change:transform;
+    }
+    .wallet-btn:hover{
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      color:#001b10;
+      filter:brightness(1.03);
+    }
+    .wallet-btn:active{ transform:translateY(1px) scale(0.985); }
+    .wallet-btn .ripple{
+      position:absolute;
+      border-radius:50%;
+      transform:scale(0);
+      animation:ripple .55s ease-out;
+      background:rgba(255,255,255,.35);
+      pointer-events:none;
+    }
+    @keyframes ripple{ to{ transform:scale(3.2); opacity:0; } }
 
-.token-select{
- flex:1;
- padding:12px;
- background:#000;
- border:1px solid #111;
- color:#fff;
- border-radius:10px;
- cursor:pointer;
- font-weight:700;
-}
-.token-select.active{
- border-color:var(--primary);
- color:var(--primary);
-}
+    /* Layout */
+    .wrap{
+      max-width:1200px;
+      margin:auto;
+      padding:22px 18px 70px;
+    }
+    .hero{
+      border:1px solid rgba(0,255,133,.14);
+      background:radial-gradient(circle at 15% 10%, rgba(0,255,133,.10), rgba(255,255,255,.01) 60%);
+      border-radius:26px;
+      padding:22px;
+      box-shadow:var(--shadow);
+      margin-top:14px;
+    }
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(0,255,133,.18);
+      background:rgba(255,255,255,.02);
+      color:var(--muted);
+      font-weight:950;
+      font-size:12px;
+      letter-spacing:.45px;
+      text-transform:uppercase;
+    }
+    .kicker .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      box-shadow:0 0 20px rgba(0,255,133,.28);
+    }
+    h1{
+      margin-top:12px;
+      font-size:30px;
+      color:var(--primary);
+      letter-spacing:-.35px;
+    }
+    .hero p{
+      margin-top:10px;
+      color:var(--muted);
+      line-height:1.85;
+      max-width:980px;
+      font-size:14.6px;
+    }
 
-input{
- width:100%;
- padding:14px;
- background:#000;
- border:1px solid #111;
- border-radius:10px;
- color:#fff;
- font-size:16px;
- margin-bottom:16px;
-}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:16px;
+      margin-top:16px;
+      align-items:start;
+    }
+    @media(max-width:980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
-.info-box{
- background:#000;
- border:1px solid #111;
- border-radius:14px;
- padding:18px;
- margin-bottom:18px;
- color:#E5E7EB;
- font-size:15px;
-}
+    .card{
+      border:1px solid var(--cardBorder);
+      background:rgba(255,255,255,.02);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    .card h2{
+      font-size:18px;
+      color:var(--text);
+      margin-bottom:8px;
+      letter-spacing:-.1px;
+    }
+    .muted{ color:var(--muted); line-height:1.75; font-size:14px; }
 
-.info-line{
- display:flex;
- justify-content:space-between;
- margin-bottom:8px;
-}
-.info-line span:last-child{
- color:var(--accent);
- font-weight:700;
-}
+    /* Swap terminal container */
+    #integrated-terminal{
+      width:100%;
+      height:640px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.20);
+    }
 
-.buy-btn{
- width:100%;
- padding:16px;
- border-radius:999px;
- border:none;
- background:linear-gradient(135deg,var(--accent),var(--primary));
- font-weight:900;
- cursor:not-allowed;
- opacity:.5;
-}
+    /* Contribute widget */
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:12px;
+    }
+    .input{
+      flex:1 1 230px;
+      min-width:220px;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+    }
+    .input:focus{
+      border-color:rgba(0,255,133,.30);
+      box-shadow:0 0 0 4px rgba(0,255,133,.08);
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.02);
+      color:var(--text);
+      font-weight:950;
+      padding:14px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.18s ease;
+      min-width:160px;
+    }
+    .btn.primary{
+      border-color:rgba(0,255,133,.35);
+      background:linear-gradient(135deg, rgba(0,255,133,.18), rgba(0,191,165,.10));
+    }
+    .btn.primary:hover{
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      color:#001b10;
+    }
+    .btn:hover{ border-color:rgba(0,255,133,.25); }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      filter:saturate(.6);
+    }
 
-.notice{
- margin-top:20px;
- text-align:center;
- color:var(--muted);
- font-size:14px;
-}
+    .pill{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.18);
+      margin-top:12px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+    .pill b{ color:var(--text); }
 
-.tokenomics{
- margin-top:40px;
- text-align:center;
- color:#E5E7EB;
-}
-.tokenomics h3{
- color:var(--primary);
- margin-bottom:14px;
-}
-.tokenomics p{
- line-height:1.7;
- font-size:14px;
-}
-</style>
+    .status{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+      display:none;
+    }
+    .status.show{ display:block; }
+    .status.good{ border-color:rgba(34,197,94,.35); }
+    .status.warn{ border-color:rgba(251,191,36,.35); }
+    .status.bad{ border-color:rgba(251,113,133,.35); }
+    .status a{ color:var(--primary); font-weight:900; text-decoration:none; }
+    .status a:hover{ text-decoration:underline; }
+
+    .steps{
+      margin-top:10px;
+      display:grid;
+      gap:10px;
+    }
+    .step{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.07);
+      background:rgba(0,0,0,.14);
+    }
+    .num{
+      width:34px;height:34px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:950;
+      color:var(--primary);
+      border:1px solid rgba(0,255,133,.22);
+      background:rgba(0,255,133,.10);
+      flex:0 0 auto;
+    }
+    .step h3{ font-size:14px; margin-top:2px; }
+    .step p{ color:var(--muted); font-size:13px; line-height:1.75; margin-top:4px; }
+
+    footer{
+      margin-top:18px;
+      text-align:center;
+      color:rgba(156,163,175,.92);
+      font-size:13px;
+      line-height:1.7;
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <div class="nav">
+      <div class="logo">PULSE</div>
+      <div class="nav-pill">
+        <a class="nav-link" href="index.html">Home</a>
+        <a class="nav-link" href="whitepaper.html">White Paper</a>
+        <a class="nav-link" href="staking.html">Staking</a>
+        <button class="wallet-btn" id="walletBtn">Connect Wallet</button>
+      </div>
+    </div>
+  </header>
 
-<header>
- <h1>PULSE IDO – PLS Token</h1>
-</header>
+  <div class="wrap">
+    <div class="hero">
+      <span class="kicker"><span class="dot"></span> IDO • Swap • Presale Contribution</span>
+      <h1>PULSE IDO Portal</h1>
+      <p>
+        Use the built-in swap to acquire SOL/USDC (or other tokens) and participate in the IDO flow.
+        The “Contribute” module below sends SOL to the official presale address via Phantom (transaction signed in-wallet).
+        Always verify the address and domain before sending funds.
+      </p>
+    </div>
 
-<div class="container">
+    <div class="grid">
 
- <button class="wallet-btn" onclick="connectWallet()">Connect Phantom Wallet</button>
+      <!-- LEFT: Swap -->
+      <div class="card">
+        <h2>Swap (Powered by Jupiter)</h2>
+        <p class="muted">
+          This embedded swap uses Jupiter’s Terminal/Plugin approach (window.Jupiter.init) and can run directly in plain HTML. [1](https://terminal.jup.ag/)[2](https://dev.jup.ag/tool-kits/plugin)
+        </p>
 
- <div class="select-row">
-  <button class="token-select active" onclick="selectToken('SOL')">SOL</button>
-  <button class="token-select" onclick="selectToken('USDT')">USDT</button>
-  <button class="token-select" onclick="selectToken('USDC')">USDC</button>
- </div>
+        <div style="margin-top:12px;">
+          <div id="integrated-terminal"></div>
+        </div>
 
- <input type="number" id="amount" placeholder="Enter amount" oninput="calculate()">
+        <div class="pill">
+          <span><b>Tip:</b> You can keep this integrated terminal for “Buy SOL / Buy USDC” and later add “Buy PLS” when mint is live.</span>
+          <span><b>Mode:</b> Integrated</span>
+        </div>
+      </div>
 
- <div class="info-box">
-  <div class="info-line">
-   <span>Estimated Token Price</span>
-   <span id="price">1 SOL = 2,000,000 PLS</span>
+      <!-- RIGHT: Contribute -->
+      <div class="card">
+        <h2>Contribute (Presale)</h2>
+        <p class="muted">
+          This sends a SOL transfer transaction to the official presale address. Phantom will sign and broadcast it using <code>signAndSendTransaction</code>, the recommended method. [4](https://docs.phantom.com/solana/sending-a-transaction)
+        </p>
+
+        <div class="pill" style="margin-top:12px;">
+          <span><b>Wallet:</b> <span id="walletLabel">Not connected</span></span>
+          <span><b>Balance:</b> <span id="balanceLabel">—</span></span>
+        </div>
+
+        <div class="row">
+          <input class="input" id="solAmount" type="number" step="0.01" min="0" placeholder="Amount in SOL" />
+          <button class="btn" id="maxBtn" type="button">Max</button>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="contributeBtn" type="button" disabled>Contribute SOL</button>
+          <button class="btn" id="copyAddrBtn" type="button">Copy Address</button>
+        </div>
+
+        <div class="pill">
+          <span><b>Presale Address:</b> <span id="presaleAddrLabel" style="word-break:break-all;"></span></span>
+        </div>
+
+        <div class="pill">
+          <span><b>Indicative rate:</b> <span id="rateLabel"></span></span>
+          <span><b>Estimated PLS:</b> <span id="estPls">—</span></span>
+        </div>
+
+        <div class="status" id="statusBox">
+          <b id="statusTitle">Status</b>
+          <div id="statusMsg"></div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <h2 style="margin-bottom:8px;">IDO Steps</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="num">1</div>
+              <div>
+                <h3>Connect Wallet</h3>
+                <p>Connect Phantom and confirm you are on the correct domain.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div>
+                <h3>Swap if needed</h3>
+                <p>Use the embedded swap to acquire SOL/USDC and prepare your contribution.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <div>
+                <h3>Contribute</h3>
+                <p>Send SOL to the presale address. You’ll receive a transaction signature for verification.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="num">4</div>
+              <div>
+                <h3>Claim (later)</h3>
+                <p>When PLS token launches, claim instructions and on-chain claim flow will be published.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pill" style="margin-top:14px;">
+          <span><b>Safety:</b> Never share seed phrases. Verify address twice. Small test tx recommended.</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      © 2026 PULSE Protocol • This page is informational and does not constitute financial advice.
+    </footer>
   </div>
-  <div class="info-line">
-   <span>PLS You Receive</span>
-   <span id="receive">0 PLS</span>
-  </div>
- </div>
 
- <button class="buy-btn">Buy PLS (IDO not live)</button>
+  <script>
+    /***************
+     * CONFIG — EDIT THESE
+     ***************/
+    const CONFIG = {
+      // Replace with YOUR official presale receiving wallet address:
+      PRESALE_RECIPIENT: "11111111111111111111111111111111",
 
- <div class="notice">
-  Presale allocation: 30% of total supply (300,000,000 PLS)
- </div>
+      // Choose network: "mainnet-beta" or "devnet"
+      NETWORK: "mainnet-beta",
 
- <div class="tokenomics">
-  <h3>Tokenomics</h3>
-  <p>
-   Total Supply: 1,000,000,000 PLS<br>
-   Presale: 30%<br>
-   Liquidity: 20%<br>
-   Ecosystem: 20%<br>
-   Team: 15%<br>
-   Treasury: 15%<br><br>
-   <strong>Deflationary:</strong> All transaction taxes are burned periodically.
-  </p>
- </div>
+      // Optional: indicative presale price (NOT guaranteed, just to show meaningful UX)
+      // Example: 1 PLS = $0.0025
+      PLS_PRICE_USD: 0.0025,
 
-</div>
+      // Optional: SOL price estimate (only for UI). Use a fixed number or fetch later from an API.
+      SOL_USD_ESTIMATE: 100
+    };
 
-<script>
-let selectedToken = "SOL";
+    /***************
+     * Helpers
+     ***************/
+    const walletBtn = document.getElementById("walletBtn");
+    const contributeBtn = document.getElementById("contributeBtn");
+    const maxBtn = document.getElementById("maxBtn");
+    const solAmount = document.getElementById("solAmount");
+    const walletLabel = document.getElementById("walletLabel");
+    const balanceLabel = document.getElementById("balanceLabel");
+    const presaleAddrLabel = document.getElementById("presaleAddrLabel");
+    const copyAddrBtn = document.getElementById("copyAddrBtn");
+    const rateLabel = document.getElementById("rateLabel");
+    const estPls = document.getElementById("estPls");
 
-const rates = {
- SOL: 2000000,
- USDT: 2000,
- USDC: 2000
-};
+    const statusBox = document.getElementById("statusBox");
+    const statusTitle = document.getElementById("statusTitle");
+    const statusMsg = document.getElementById("statusMsg");
 
-function selectToken(token){
- selectedToken = token;
- document.querySelectorAll('.token-select').forEach(b=>b.classList.remove('active'));
- event.target.classList.add('active');
- calculate();
-}
+    presaleAddrLabel.textContent = CONFIG.PRESALE_RECIPIENT;
 
-function calculate(){
- const amount = parseFloat(document.getElementById("amount").value) || 0;
- const receive = amount * rates[selectedToken];
- document.getElementById("receive").innerText = receive.toLocaleString() + " PLS";
- document.getElementById("price").innerText =
-  selectedToken === "SOL"
-  ? "1 SOL = 2,000,000 PLS"
-  : "1 " + selectedToken + " = 2,000 PLS";
-}
+    function showStatus(type, title, msgHtml){
+      statusBox.classList.remove("good","warn","bad");
+      statusBox.classList.add("show");
+      if(type) statusBox.classList.add(type);
+      statusTitle.textContent = title;
+      statusMsg.innerHTML = msgHtml;
+    }
 
-async function connectWallet(){
- if(!window.solana || !window.solana.isPhantom){
-  alert("Please install Phantom Wallet");
-  return;
- }
- const res = await window.solana.connect();
- alert("Connected: " + res.publicKey.toString());
-}
-</script>
+    function addRipple(e){
+      const btn = e.currentTarget;
+      const circle = document.createElement("span");
+      const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+      const radius = diameter / 2;
+      circle.classList.add("ripple");
+      circle.style.width = circle.style.height = `${diameter}px`;
 
+      const rect = btn.getBoundingClientRect();
+      circle.style.left = `${e.clientX - rect.left - radius}px`;
+      circle.style.top  = `${e.clientY - rect.top  - radius}px`;
+
+      const existing = btn.querySelector(".ripple");
+      if(existing) existing.remove();
+      btn.appendChild(circle);
+    }
+
+    // Initialize rate label
+    function updateRateAndEstimate(){
+      const sol = Number(solAmount.value || 0);
+      const usd = sol * CONFIG.SOL_USD_ESTIMATE;
+      const pls = CONFIG.PLS_PRICE_USD > 0 ? (usd / CONFIG.PLS_PRICE_USD) : 0;
+      rateLabel.textContent = `1 SOL ≈ $${CONFIG.SOL_USD_ESTIMATE} • 1 PLS ≈ $${CONFIG.PLS_PRICE_USD}`;
+      estPls.textContent = sol > 0 ? `${Math.floor(pls).toLocaleString()} PLS (indicative)` : "—";
+    }
+    solAmount.addEventListener("input", updateRateAndEstimate);
+    updateRateAndEstimate();
+
+    // Copy address
+    copyAddrBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(CONFIG.PRESALE_RECIPIENT);
+        showStatus("good","Copied","Presale address copied to clipboard.");
+      }catch{
+        showStatus("warn","Copy failed","Could not access clipboard. Copy manually from the address line.");
+      }
+    });
+
+    /***************
+     * Jupiter Swap Embed
+     * Setup per Jupiter Terminal docs: include script + call window.Jupiter.init({...}) [1](https://terminal.jup.ag/)[2](https://dev.jup.ag/tool-kits/plugin)
+     ***************/
+    function initJupiter(){
+      if(!window.Jupiter || !window.Jupiter.init){
+        showStatus("warn","Swap","Jupiter Terminal failed to load. Please refresh.");
+        return;
+      }
+
+      window.Jupiter.init({
+        displayMode: "integrated",
+        integratedTargetId: "integrated-terminal",
+        // You can tweak initial form settings later (mints/amounts).
+        // formProps: { initialInputMint: "...", initialOutputMint: "..." }
+      });
+    }
+    // Init after a tick
+    setTimeout(initJupiter, 50);
+
+    /***************
+     * Wallet + Contribute
+     * We'll use @solana/web3.js browser build (unpkg) for Transaction creation. nd sends using signAndSendTransaction (recommended). [4](https://docs.phantom.com/solana/sending-a-transaction)
+     ***************/
+    const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL, clusterApiUrl } = solanaWeb3;
+
+    let provider = null;
+    let connection = null;
+    let connectedKey = null;
+    let cachedBalance = 0;
+
+    function getProvider(){
+      // Phantom usually exposes window.solana
+      if(window.solana && window.solana.isPhantom) return window.solana;
+      // Some setups may use window.phantom.solana
+      if(window.phantom?.solana?.isPhantom) return window.phantom.solana;
+      return null;
+    }
+
+    function getEndpoint(){
+      // Use clusterApiUrl for simplicity
+      return clusterApiUrl(CONFIG.NETWORK);
+    }
+
+    async function refreshBalance(){
+      if(!connectedKey || !connection) return;
+      const lamports = await connection.getBalance(connectedKey, "confirmed");
+      cachedBalance = lamports / LAMPORTS_PER_SOL;
+      balanceLabel.textContent = `${cachedBalance.toFixed(4)} SOL`;
+    }
+
+    async function connectWallet(e){
+      addRipple(e);
+      provider = getProvider();
+      if(!provider){
+        showStatus("bad","Wallet","Phantom not detected. Please install Phantom wallet.");
+        return;
+      }
+
+      try{
+        const resp = await provider.connect();
+        connectedKey = resp.publicKey;
+        walletLabel.textContent = connectedKey.toString();
+        connection = new Connection(getEndpoint(), "confirmed");
+        contributeBtn.disabled = false;
+        await refreshBalance();
+        showStatus("good","Wallet connected","You can now contribute SOL. Always verify the presale address.");
+      }catch(err){
+        showStatus("warn","Wallet","Connection cancelled or failed.");
+      }
+    }
+
+    walletBtn.addEventListener("click", connectWallet);
+
+    maxBtn.addEventListener("click", async () => {
+      if(!connectedKey) return showStatus("warn","Max","Connect wallet first.");
+      await refreshBalance();
+      // Keep a small buffer for fees
+      const max = Math.max(0, cachedBalance - 0.002);
+      solAmount.value = max.toFixed(4);
+      updateRateAndEstimate();
+    });
+
+    async function contribute(){
+      if(!provider || !connectedKey) return showStatus("warn","Contribute","Connect wallet first.");
+      const amountSol = Number(solAmount.value);
+      if(!amountSol || amountSol <= 0) return showStatus("warn","Contribute","Enter a valid SOL amount.");
+
+      // Basic sanity buffer
+      await refreshBalance();
+      if(amountSol > cachedBalance - 0.001){
+        return showStatus("warn","Insufficient balance","Leave a small amount for fees.");
+      }
+
+      try{
+        const recipient = new PublicKey(CONFIG.PRESALE_RECIPIENT);
+        const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+
+        const tx = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: connectedKey,
+            toPubkey: recipient,
+            lamports
+          })
+        );
+        tx.feePayer = connectedKey;
+        tx.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
+
+        // Phantom recommended method: sign and send with provider.signAndSendTransaction [4](https://docs.phantom.com/solana/sending-a-transaction)
+        const { signature } = await provider.signAndSendTransaction(tx);
+
+        showStatus(
+          "good",
+          "Transaction sent",
+          `Signature: <code>${signature}</code><br/>
+           You can verify it in an explorer: <a href="https://solscan.io/tx/${signature}" target="_blank" rel="noopener">View on Solscan</a>`
+        );
+
+        // refresh balance after a short delay
+        setTimeout(refreshBalance, 1800);
+      }catch(err){
+        showStatus("bad","Transaction failed","User cancelled or transaction failed. Please try again.");
+      }
+    }
+
+    contributeBtn.addEventListener("click", contribute);
+
+    // Disable contribute until connected
+    contributeBtn.disabled = true;
+  </script>
 </body>
 </html>
