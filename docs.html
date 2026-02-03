@@ -7,9 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="PULSE documentation: protocol overview, pools, cashflow routing, staking, governance, reporting, and risk disclosures." />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
 
   <style>
     :root{
@@ -24,6 +25,7 @@
       --radius:16px;
       --shadow:0 18px 55px rgba(0,0,0,.38);
       --link:rgba(0,255,133,.95);
+      --nav-h:66px;
     }
 
     *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
@@ -49,6 +51,7 @@
       border-radius: 8px;
     }
 
+    /* Topbar with logo like index */
     .topbar{
       position:sticky;
       top:0;
@@ -56,24 +59,31 @@
       backdrop-filter: blur(10px);
       background: rgba(5,6,8,.85);
       border-bottom:1px solid var(--border);
+      height: var(--nav-h);
     }
-
     .topbar-inner{
       max-width:1200px;
       margin:auto;
-      padding:14px 18px;
+      padding:0 18px;
+      height: var(--nav-h);
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:12px;
       flex-wrap:wrap;
     }
-
-    .logo{
-      font-size:24px;
-      font-weight:950;
-      color:var(--primary);
-      letter-spacing:.3px;
+    .brand a{
+      display:inline-flex; align-items:center; gap:10px;
+      height: var(--nav-h); text-decoration:none;
+    }
+    .brand img{
+      display:block;
+      max-height: calc(var(--nav-h) - 22px);
+      width:auto;
+    }
+    .sr-only{
+      position:absolute !important; width:1px;height:1px;padding:0;margin:-1px;
+      overflow:hidden;clip:rect(0,0,1px,1px);white-space:nowrap;border:0;
     }
 
     .pill{
@@ -83,14 +93,14 @@
       border:1px solid rgba(0,255,133,.25);
       background:rgba(255,255,255,.02);
       border-radius:999px;
-      padding:10px;
+      padding:8px;
     }
-
     .pill a{
-      padding:10px 12px;
+      padding:8px 12px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.02);
+      font-weight:800;
     }
     .pill a:hover{
       border-color: rgba(0,255,133,.25);
@@ -109,14 +119,13 @@
 
     .sidebar{
       position:sticky;
-      top:84px;
+      top:calc(var(--nav-h) + 18px);
       border:1px solid var(--cardBorder);
       background:rgba(255,255,255,.02);
       border-radius: 18px;
       box-shadow: var(--shadow);
       padding: 16px;
     }
-
     .sidebar h3{
       color: var(--primary);
       font-size: 14px;
@@ -124,11 +133,7 @@
       text-transform: uppercase;
       margin-bottom:10px;
     }
-
-    .nav{
-      display:grid;
-      gap:8px;
-    }
+    .nav{ display:grid; gap:8px; }
     .nav a{
       padding:10px 12px;
       border-radius: 12px;
@@ -159,40 +164,19 @@
       border-radius: 18px;
       margin-bottom: 16px;
     }
-
     .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(0,255,133,.18);
-      background:rgba(255,255,255,.02);
-      color:var(--muted);
-      font-weight:900;
-      font-size:12px;
-      letter-spacing:.4px;
-      text-transform:uppercase;
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
+      border-radius:999px; border:1px solid rgba(0,255,133,.18);
+      background:rgba(255,255,255,.02); color:var(--muted);
+      font-weight:900; font-size:12px; letter-spacing:.4px; text-transform:uppercase;
     }
     .kicker .dot{
       width:10px;height:10px;border-radius:50%;
       background:linear-gradient(135deg,var(--primary),var(--secondary));
       box-shadow:0 0 20px rgba(0,255,133,.28);
     }
-
-    h1{
-      margin-top:12px;
-      font-size: 28px;
-      color: var(--primary);
-      letter-spacing:-.3px;
-    }
-
-    .subtitle{
-      margin-top:10px;
-      color: var(--muted);
-      line-height:1.8;
-      max-width: 900px;
-    }
+    h1{ margin-top:12px; font-size: 28px; color: var(--primary); letter-spacing:-.3px; }
+    .subtitle{ margin-top:10px; color: var(--muted); line-height:1.8; max-width: 900px; }
 
     .callouts{
       display:grid;
@@ -200,7 +184,6 @@
       gap: 12px;
       margin-top: 14px;
     }
-
     .callout{
       padding: 14px;
       border-radius: 16px;
@@ -208,83 +191,29 @@
       background: rgba(0,0,0,.18);
     }
     .callout b{
-      display:block;
-      color: var(--text);
-      margin-bottom: 6px;
-      font-size: 13px;
-      letter-spacing:.2px;
-      text-transform: uppercase;
+      display:block; color: var(--text); margin-bottom: 6px;
+      font-size: 13px; letter-spacing:.2px; text-transform: uppercase;
     }
-    .callout p{
-      color: var(--muted);
-      font-size: 14px;
-      line-height:1.7;
-    }
+    .callout p{ color: var(--muted); font-size: 14px; line-height:1.7; }
 
-    section{
-      padding: 12px 6px;
-      scroll-margin-top: 92px;
-    }
+    section{ padding: 12px 6px; scroll-margin-top: calc(var(--nav-h) + 26px); }
+    section h2{ font-size: 18px; color: var(--text); margin: 10px 0 8px; letter-spacing:-.1px; }
+    section p, section li{ color: var(--muted); line-height: 1.85; font-size: 14.5px; }
+    ul{padding-left: 18px; margin: 8px 0;} li{margin: 6px 0;}
 
-    section h2{
-      font-size: 18px;
-      color: var(--text);
-      margin: 10px 0 8px;
-      letter-spacing:-.1px;
-    }
-    section p, section li{
-      color: var(--muted);
-      line-height: 1.85;
-      font-size: 14.5px;
-    }
-    ul{padding-left: 18px; margin: 8px 0;}
-    li{margin: 6px 0;}
+    .divider{ height: 1px; background: rgba(255,255,255,.06); margin: 14px 0; }
 
-    .divider{
-      height: 1px;
-      background: rgba(255,255,255,.06);
-      margin: 14px 0;
-    }
-
-    .info{
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.02);
-      border-radius: 16px;
-      padding: 14px;
-      margin: 10px 0;
-    }
-    .info b{ color: var(--primary); }
-    .muted{ color: var(--muted); }
-
-    .mini-grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
-      gap: 12px;
-      margin-top: 10px;
-    }
+    .mini-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; margin-top: 10px; }
     .mini{
       border: 1px solid rgba(255,255,255,.06);
       border-radius: 16px;
       background: rgba(0,0,0,.18);
       padding: 14px;
     }
-    .mini h4{
-      color: var(--primary);
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
+    .mini h4{ color: var(--primary); font-size: 14px; margin-bottom: 8px; }
 
-    .glossary{
-      display:grid;
-      gap:10px;
-      margin-top:10px;
-    }
-    .term{
-      border:1px solid rgba(255,255,255,.06);
-      background: rgba(0,0,0,.16);
-      border-radius: 14px;
-      padding: 12px 14px;
-    }
+    .glossary{ display:grid; gap:10px; margin-top:10px; }
+    .term{ border:1px solid rgba(255,255,255,.06); background: rgba(0,0,0,.16); border-radius: 14px; padding: 12px 14px; }
     .term b{color: var(--text);}
 
     .footer{
@@ -305,12 +234,17 @@
 </head>
 
 <body>
+  <!-- Topbar with brand logo identical to index -->
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="logo">PULSE</div>
+      <div class="brand">
+        <a href="index.html#top" aria-label="Go to top">
+          <img src="logo.png" alt="PULSE logo" />
+          <span class="sr-only">PULSE</span>
+        </a>
+      </div>
       <div class="pill">
         <a href="index.html">Home</a>
-        <a href="whitepaper.html">White Paper</a>
         <a href="staking.html">Staking</a>
       </div>
     </div>
@@ -324,14 +258,14 @@
         <a href="#architecture">Protocol Architecture</a>
         <a href="#pools">RWA Pools</a>
         <a href="#cashflows">Cashflow Routing</a>
-        <a href="#reporting">Transparency & Reporting</a>
+        <a href="#reporting">Transparency &amp; Reporting</a>
         <a href="#token">PLS Token Utility</a>
         <a href="#staking">Staking (Planned)</a>
         <a href="#governance">Governance (Planned)</a>
-        <a href="#fees">Fees & Treasury</a>
+        <a href="#fees">Fees &amp; Treasury</a>
         <a href="#security">Security Model</a>
         <a href="#risks">Risk Disclosures</a>
-        <a href="#wallets">Wallets & UX</a>
+        <a href="#wallets">Wallets &amp; UX</a>
         <a href="#faq">FAQ (Docs)</a>
         <a href="#glossary">Glossary</a>
       </nav>
@@ -349,16 +283,16 @@
 
         <div class="callouts">
           <div class="callout">
-            <b>What you get here</b>
-            <p>Clear mechanics, disclosure-first approach, and a structure you can expand as the protocol matures.</p>
+            <b>What you get</b>
+            <p>Clear mechanics and a disclosure-first approach.</p>
           </div>
           <div class="callout">
             <b>What we avoid</b>
-            <p>No “guaranteed yield” claims. No fake partners. Terms and metrics should be published when real.</p>
+            <p>No “guaranteed yield” claims. No fake partners.</p>
           </div>
           <div class="callout">
             <b>Status</b>
-            <p>Pre-launch documentation. Update this page as contracts, pools, audits, and integrations go live.</p>
+            <p>Pre‑launch.</p>
           </div>
         </div>
       </div>
@@ -381,41 +315,27 @@
           </div>
           <div class="mini">
             <h4>Reporting Layer</h4>
-            <p>Publishes periodic updates and links to proofs/records (where available) for allocations and events.</p>
+            <p>Publishes periodic updates and links to references where available for allocations and events.</p>
           </div>
           <div class="mini">
             <h4>Staking & Governance</h4>
             <p>Mechanisms to align long-term holders and enable community-controlled parameter adjustments over time.</p>
           </div>
         </div>
-
-        <div class="info">
-          <b>Design principle:</b> If a user cannot understand how value flows, the system isn’t transparent enough.
-        </div>
       </section>
 
       <div class="divider"></div>
 
       <section id="pools">
-        <h2>2) RWA Pools (Real Estate & Financing)</h2>
+        <h2>2) RWA Pools (Real Estate &amp; Financing)</h2>
         <p>
           Pools are the core product. Each pool should be accompanied by clear, user-facing terms and risk disclosures.
-          The goal is to standardize what “transparent” means.
         </p>
-
         <ul>
           <li><b>Real estate pools:</b> structured income streams (e.g., income notes, rent-like distributions, cashflow notes).</li>
           <li><b>Financing pools:</b> short-duration exposures (e.g., invoice financing, credit-like pools with defined schedules).</li>
-          <li><b>Diversified baskets:</b> multi-asset pools to reduce concentration (optional as protocol scales).</li>
+          <li><b>Diversified baskets:</b> multi-asset pools to reduce concentration.</li>
         </ul>
-
-        <div class="info">
-          <b>Pool Terms Template (recommended):</b>
-          <p class="muted">
-            Duration • Minimum/maximum allocation • Payout frequency • Fee model • Counterparty structure (if any) •
-            Disclosures • Procedures for material events • Parameter update rules.
-          </p>
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -433,28 +353,24 @@
             <p>Interest payment, repayment, rent-like distribution, or structured payout occurs off-chain.</p>
           </div>
           <div class="mini">
-            <h4>Validation & Update</h4>
-            <p>Event is validated and recorded in the reporting layer. Where possible, references/proofs are provided.</p>
+            <h4>Validation &amp; Update</h4>
+            <p>Event is validated and recorded in the reporting layer. References may be provided where possible.</p>
           </div>
           <div class="mini">
             <h4>On-chain Distribution</h4>
-            <p>Router allocates funds based on rules: LPs / stakers / treasury, following pool schedule.</p>
+            <p>Router allocates funds based on rules: LPs / stakers / treasury, following the pool schedule.</p>
           </div>
           <div class="mini">
             <h4>Post-Event Reporting</h4>
             <p>Summary: what happened, how much was routed, any exceptions, and next scheduled payout.</p>
           </div>
         </div>
-
-        <div class="info">
-          <b>Important:</b> Distribution logic should match the published terms. If terms change, the change must be disclosed before it takes effect.
-        </div>
       </section>
 
       <div class="divider"></div>
 
       <section id="reporting">
-        <h2>4) Transparency & Reporting</h2>
+        <h2>4) Transparency &amp; Reporting</h2>
         <p>
           Trust comes from consistent reporting. A mature reporting approach includes:
         </p>
@@ -464,10 +380,6 @@
           <li><b>Distribution records:</b> on-chain distribution references where possible.</li>
           <li><b>Disclosure updates:</b> changes to risk profile or terms must be clearly communicated.</li>
         </ul>
-
-        <div class="info">
-          <b>Release-ready tip:</b> Publish a monthly “Transparency Report” page and link it from <code>index.html</code>.
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -475,16 +387,13 @@
       <section id="token">
         <h2>5) PLS Token Utility (Governance + Staking)</h2>
         <p>
-          PLS is intended to power protocol participation. To keep it professional and clear, utility should be explicitly documented:
+          PLS is intended to power protocol participation. Utility should be explicitly documented:
         </p>
         <ul>
           <li><b>Governance:</b> proposals and voting for parameters (pool caps, incentives, treasury allocations).</li>
           <li><b>Staking:</b> participation mechanism; reward sources and rules published before activation.</li>
           <li><b>Incentives:</b> time-bound programs for liquidity bootstrapping, disclosed and measurable.</li>
         </ul>
-        <div class="info">
-          <b>Best practice:</b> Avoid vague promises. Always publish schedules, rules, and scope (what governance can and cannot change).
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -492,17 +401,8 @@
       <section id="staking">
         <h2>6) Staking (Planned)</h2>
         <p>
-          Staking becomes meaningful when it has clear rules and transparent sources for rewards. Before activation, publish:
+          Staking becomes meaningful when it has clear rules and transparent sources for rewards.
         </p>
-        <ul>
-          <li>Reward sources (emissions and/or protocol incentives)</li>
-          <li>Distribution cadence (daily/weekly)</li>
-          <li>Lock/unstake rules (cooldown, penalties if any)</li>
-          <li>Eligibility rules (minimum stake, tiers, etc.)</li>
-        </ul>
-        <div class="info">
-          <b>UI:</b> The <a href="staking.html" style="color:var(--link)">staking page</a> can be live as a UI template while staking is not yet active.
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -523,18 +423,10 @@
       <div class="divider"></div>
 
       <section id="fees">
-        <h2>8) Fees & Treasury</h2>
+        <h2>8) Fees &amp; Treasury</h2>
         <p>
-          Fees (if any) must be unambiguous. A professional approach is to disclose:
+          Fees (if any) must be unambiguous. Disclose the type, destination, and timing of any fees used by the protocol.
         </p>
-        <ul>
-          <li><b>Fee type:</b> management/protocol/performance (if used)</li>
-          <li><b>Fee destination:</b> treasury, maintenance, incentives</li>
-          <li><b>Fee timing:</b> when fees are charged and how they are calculated</li>
-        </ul>
-        <div class="info">
-          <b>Treasury transparency:</b> publish a summary of treasury usage and budgets periodically.
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -542,7 +434,7 @@
       <section id="security">
         <h2>9) Security Model</h2>
         <p>
-          Security is a process, not a slogan. A realistic security page can include:
+          Security is a process. Typical elements include:
         </p>
         <ul>
           <li>Testing and staged releases (devnet → limited mainnet → full release)</li>
@@ -550,9 +442,6 @@
           <li>Monitoring and incident response plan</li>
           <li>Responsible disclosure / bug bounty (when applicable)</li>
         </ul>
-        <div class="info">
-          <b>Note:</b> If audits are completed, always link the report + audited commit/hash/version.
-        </div>
       </section>
 
       <div class="divider"></div>
@@ -560,7 +449,7 @@
       <section id="risks">
         <h2>10) Risk Disclosures</h2>
         <p>
-          RWAs + DeFi include multiple risk categories. A release-ready site should mention:
+          RWAs + DeFi include multiple risk categories:
         </p>
         <ul>
           <li><b>Smart contract risk:</b> bugs, exploits, upgrades</li>
@@ -568,15 +457,12 @@
           <li><b>Market risk:</b> changes in asset value, liquidity conditions</li>
           <li><b>Regulatory risk:</b> availability varies by jurisdiction</li>
         </ul>
-        <div class="info">
-          <b>Plain-language rule:</b> If a user cannot understand the risks, they cannot consent responsibly.
-        </div>
       </section>
 
       <div class="divider"></div>
 
       <section id="wallets">
-        <h2>11) Wallets & UX</h2>
+        <h2>11) Wallets &amp; UX</h2>
         <p>
           PULSE uses standard Solana wallet provider flows (e.g., Phantom-compatible). Good UX and safety guidelines:
         </p>
@@ -622,12 +508,8 @@
           <div class="term"><b>Cashflow</b> — A payment event (interest, repayment, income) originating off-chain.</div>
           <div class="term"><b>Router</b> — On-chain mechanism that distributes funds based on pool rules.</div>
           <div class="term"><b>Disclosure</b> — Publicly documented risks, terms, and material changes.</div>
-          <div class="term"><b>Staking</b> — Locking tokens for incentives and/or participation (rules must be published).</div>
+          <div class="term"><b>Staking</b> — Locking tokens for incentives and/or participation.</div>
           <div class="term"><b>Governance</b> — Proposals and voting to change protocol parameters within defined limits.</div>
-        </div>
-
-        <div class="info" style="margin-top:12px;">
-          <b>Next step:</b> When you finalize details (vesting, fee model, pool templates), add them here as “v1 spec”.
         </div>
       </section>
 
